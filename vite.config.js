@@ -1,6 +1,7 @@
 import glsl from 'vite-plugin-glsl';
 
 const isCodeSandbox = 'SANDBOX_URL' in process.env || 'CODESANDBOX_HOST' in process.env
+const isRailway = 'RAILWAY_ENVIRONMENT' in process.env
 
 export default {
     publicDir: './public/',
@@ -8,7 +9,11 @@ export default {
     server:
     {
         host: true,
-        open: !isCodeSandbox // Open if it's not a CodeSandbox
+        open: !isCodeSandbox && !isRailway
+    },
+    preview:
+    {
+        open: !isRailway
     },
     build:
     {

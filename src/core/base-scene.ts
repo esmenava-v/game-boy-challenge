@@ -293,10 +293,7 @@ export default class BaseScene {
   private showCopyrights(): void {
     const copyrights: HTMLElement = document.querySelector('.copyrights');
     copyrights.innerHTML = `
-    Nintendo logo is trademark of Nintendo.
-    Tetris logo and Tetriminos are trademarks of Tetris Holding.
-    Space Invaders logo is trademark of Taito Corporation.
-    `;
+    Nintendo and Game Boy are trademarks of Nintendo.`;
 
     if (SCENE_CONFIG.isMobile) {
       copyrights.style['font-size']  = '5px';

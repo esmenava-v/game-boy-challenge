@@ -130,6 +130,10 @@ export default class GameBoyGames {
     }
   }
 
+  public hasGame(): boolean {
+    return this.gameType !== null;
+  }
+
   public setGame(gameType: string): void {
     this.gameType = gameType;
   }
@@ -243,6 +247,7 @@ export default class GameBoyGames {
 
   private initGames(): void {
     const activeGames: string[] = [
+      GAME_TYPE.Portfolio,
       GAME_TYPE.Tetris,
       GAME_TYPE.Zelda,
       GAME_TYPE.SpaceInvaders,

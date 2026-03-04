@@ -5,6 +5,7 @@ enum CARTRIDGE_TYPE {
   Tetris = 'TETRIS',
   Zelda = 'ZELDA',
   SpaceInvaders = 'SPACE_INVADERS',
+  Portfolio = 'PORTFOLIO',
 }
 
 const CARTRIDGES_CONFIG = {
@@ -38,6 +39,12 @@ const CARTRIDGES_CONFIG = {
       amplitude: 0.04,
       speed: 0.5,
     },
+    [CARTRIDGE_TYPE.Portfolio]: {
+      startPosition: new THREE.Vector3(-2.5, 0.1, 0.2),
+      rotation: new THREE.Vector3(0, 5, 2),
+      amplitude: 0.05,
+      speed: 0.3,
+    },
   }
 }
 
@@ -56,6 +63,11 @@ const CARTRIDGES_BY_TYPE_CONFIG = {
     texture: 'baked-cartridge-space-invaders',
     textureInPocket: 'baked-cartridge-space-invaders-in-pocket',
     game: GAME_TYPE.SpaceInvaders,
+  },
+  [CARTRIDGE_TYPE.Portfolio]: {
+    texture: 'baked-cartridge-tetris',
+    textureInPocket: 'baked-cartridge-tetris-in-pocket',
+    game: GAME_TYPE.Portfolio,
   },
 }
 

@@ -47,5 +47,4 @@ npm run build
 
 ## Copyrights
 Nintendo logo is trademark of Nintendo.
-Tetris logo and Tetriminos are trademarks of Tetris Holding.
-Space Invaders logo is trademark of Taito Corporation.
+Gameboy logo is trademark of Nintendo.

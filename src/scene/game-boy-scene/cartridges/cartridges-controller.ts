@@ -288,9 +288,7 @@ export default class CartridgesController extends THREE.Group {
 
   private initCartridges(): void {
     const cartridgesTypes: CARTRIDGE_TYPE[] = [
-      CARTRIDGE_TYPE.Tetris,
-      CARTRIDGE_TYPE.Zelda,
-      CARTRIDGE_TYPE.SpaceInvaders,
+      CARTRIDGE_TYPE.Portfolio,
     ];
 
     for (let i = 0; i < cartridgesTypes.length; i++) {

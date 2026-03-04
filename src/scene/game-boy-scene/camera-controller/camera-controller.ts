@@ -4,6 +4,7 @@ import { EventEmitter } from 'pixi.js';
 import { CAMERA_CONTROLLER_CONFIG } from './camera-controller-config';
 import SCENE_CONFIG from '../../../Data/Configs/Main/scene-config';
 import DEBUG_CONFIG from '../../../Data/Configs/Main/debug-config';
+import TWEEN from 'three/addons/libs/tween.module.js';
 
 export default class CameraController {
   public events: EventEmitter;
@@ -13,6 +14,7 @@ export default class CameraController {
   private rotationDragPreviousState: boolean;
   private minDistance: number;
   private zoomDistance: number;
+  private zoomTween: any;
 
   constructor(camera: THREE.PerspectiveCamera) {
 
@@ -41,6 +43,11 @@ export default class CameraController {
   public onWheelScroll(delta: number): void {
     if (DEBUG_CONFIG.orbitControls) {
       return;
+    }
+
+    if (this.zoomTween) {
+      this.zoomTween.stop();
+      this.zoomTween = null;
     }
 
     const zoomDelta: number = delta * CAMERA_CONTROLLER_CONFIG.zoomSpeed;
@@ -88,6 +95,31 @@ export default class CameraController {
     for (let i = 0; i < 10; i++) {
       this.onWheelScroll(1);
     }
+  }
+
+  public zoomToScreen(): void {
+    if (this.zoomTween) {
+      this.zoomTween.stop();
+    }
+
+    const targetDistance = this.minDistance;
+    const maxDistance = CAMERA_CONTROLLER_CONFIG.maxDistance;
+
+    this.zoomTween = new TWEEN.Tween(this)
+      .to({ zoomDistance: targetDistance }, 1500)
+      .easing(TWEEN.Easing.Quadratic.Out)
+      .onUpdate(() => {
+        this.zoomObject.position.z = this.zoomDistance;
+        this.zoomObject.position.y = (-this.zoomObject.position.z + maxDistance - 0.4) * 0.13;
+
+        const cursorRotationCoeff = this.minDistance - (THREE.MathUtils.clamp(this.zoomDistance, this.minDistance, maxDistance) - this.minDistance);
+        GAME_BOY_CONFIG.rotation.cursorRotationSpeed = 0.2 - (cursorRotationCoeff / this.minDistance) * 0.2;
+
+        if (cursorRotationCoeff > GAME_BOY_CONFIG.rotation.zoomThresholdToDisableRotation) {
+          GAME_BOY_CONFIG.rotation.rotationDragEnabled = false;
+        }
+      })
+      .start();
   }
 
   private init(): void {

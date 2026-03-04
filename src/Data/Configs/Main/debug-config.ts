@@ -6,7 +6,7 @@ const DEBUG_CONFIG = {
   fpsMeter: false,
   rendererStats: false,
   orbitControls: false,
-  withoutUIMode: false,
+  withoutUIMode: true,
   startState: {
     disableIntro: false,
     zoomIn: false,

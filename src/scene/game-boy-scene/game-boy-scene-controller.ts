@@ -3,6 +3,7 @@ import { Application, EventEmitter } from 'pixi.js';
 import { SCENE_OBJECT_TYPE } from './data/game-boy-scene-data';
 import { GAME_BOY_CONFIG } from './game-boy/data/game-boy-config';
 import { CARTRIDGES_BY_TYPE_CONFIG, CARTRIDGE_TYPE } from './cartridges/data/cartridges-config';
+import { BUTTON_TYPE } from './game-boy/data/game-boy-data';
 import SCENE_CONFIG from '../../Data/Configs/Main/scene-config';
 import { CARTRIDGE_STATE } from './game-boy/data/game-boy-data';
 import { TETRIS_CONFIG } from './game-boy-games/games/tetris/data/tetris-config';
@@ -224,7 +225,13 @@ export default class GameBoyController {
     const cartridges = this.activeObjects[SCENE_OBJECT_TYPE.Cartridges];
     const background = this.activeObjects[SCENE_OBJECT_TYPE.Background];
 
-    gameBoy.events.on('onButtonPress', (buttonType: string) => this.games.onButtonPress(buttonType));
+    gameBoy.events.on('onButtonPress', (buttonType: string) => {
+      if (buttonType === BUTTON_TYPE.Start && !this.games.hasGame()) {
+        this.activeObjects[SCENE_OBJECT_TYPE.Cartridges].insertCartridge(CARTRIDGE_TYPE.Portfolio);
+        return;
+      }
+      this.games.onButtonPress(buttonType);
+    });
     gameBoy.events.on('onButtonUp', (buttonType: string) => this.games.onButtonUp(buttonType));
     gameBoy.events.on('onPowerOn', () => this.onPowerOn());
     gameBoy.events.on('onPowerOff', () => this.onPowerOff());
@@ -312,6 +319,10 @@ export default class GameBoyController {
     this.activeObjects[SCENE_OBJECT_TYPE.GameBoy].enableRotation();
     this.activeObjects[SCENE_OBJECT_TYPE.GameBoy].powerOn();
     this.activeObjects[SCENE_OBJECT_TYPE.GameBoy].setCartridgePocketStandardTexture();
+
+    if (gameType === GAME_TYPE.Portfolio) {
+      this.cameraController.zoomToScreen();
+    }
 
     this.gameBoyDebug.enableEjectCartridgeButton();
 

@@ -13,7 +13,8 @@ export default {
     },
     preview:
     {
-        open: !isRailway
+        open: !isRailway,
+        allowedHosts: ['game-boy-challenge-production.up.railway.app']
     },
     build:
     {

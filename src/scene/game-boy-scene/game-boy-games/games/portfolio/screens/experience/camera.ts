@@ -17,10 +17,7 @@ export default class Camera {
     const minX = -(PORTFOLIO_CONFIG.world.width - PORTFOLIO_CONFIG.screen.width);
     const clampedTarget = Math.max(Math.min(targetX, 0), minX);
 
-    // Camera only scrolls right (more negative), never back left
-    if (clampedTarget < this.cameraX) {
-      this.cameraX = clampedTarget;
-    }
+    this.cameraX = clampedTarget;
 
     this.worldContainer.x = this.cameraX;
     this.backgroundContainer.x = Math.round(this.cameraX * 0.5);

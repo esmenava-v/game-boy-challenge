@@ -7,12 +7,14 @@ enum LABEL_STATE {
   FadingIn = 'FADING_IN',
   Showing = 'SHOWING',
   FadingOut = 'FADING_OUT',
+  FadingOutThenIn = 'FADING_OUT_THEN_IN',
 }
 
 export default class UIOverlay extends Container {
   private zoneLabelText: Text;
   private labelState: LABEL_STATE;
   private labelTimer: number;
+  private pendingLabel: string;
   private progressDots: Graphics[];
   private dotsContainer: Container;
 
@@ -21,6 +23,7 @@ export default class UIOverlay extends Container {
 
     this.labelState = LABEL_STATE.Hidden;
     this.labelTimer = 0;
+    this.pendingLabel = '';
     this.progressDots = [];
 
     this.init();
@@ -31,6 +34,18 @@ export default class UIOverlay extends Container {
   }
 
   public showZoneLabel(zone: ZoneData): void {
+    if (this.zoneLabelText.text === zone.label && this.labelState === LABEL_STATE.Showing) {
+      return;
+    }
+
+    // If a label is already visible, fade it out first then swap
+    if (this.labelState === LABEL_STATE.Showing || this.labelState === LABEL_STATE.FadingIn) {
+      this.pendingLabel = zone.label;
+      this.labelState = LABEL_STATE.FadingOutThenIn;
+      this.labelTimer = 0;
+      return;
+    }
+
     this.zoneLabelText.text = zone.label;
     this.zoneLabelText.alpha = 0;
     this.zoneLabelText.visible = true;
@@ -94,7 +109,6 @@ export default class UIOverlay extends Container {
 
   private updateLabel(dt: number): void {
     const fadeInTime = 500;
-    const showTime = 2000;
     const fadeOutTime = 500;
 
     if (this.labelState === LABEL_STATE.FadingIn) {
@@ -102,23 +116,20 @@ export default class UIOverlay extends Container {
       this.zoneLabelText.alpha = Math.min(1, this.labelTimer / fadeInTime);
 
       if (this.labelTimer >= fadeInTime) {
+        this.zoneLabelText.alpha = 1;
         this.labelState = LABEL_STATE.Showing;
         this.labelTimer = 0;
       }
-    } else if (this.labelState === LABEL_STATE.Showing) {
-      this.labelTimer += dt * 1000;
-
-      if (this.labelTimer >= showTime) {
-        this.labelState = LABEL_STATE.FadingOut;
-        this.labelTimer = 0;
-      }
-    } else if (this.labelState === LABEL_STATE.FadingOut) {
+    } else if (this.labelState === LABEL_STATE.FadingOutThenIn) {
+      // Fade out old label, then swap text and fade in new one
       this.labelTimer += dt * 1000;
       this.zoneLabelText.alpha = Math.max(0, 1 - this.labelTimer / fadeOutTime);
 
       if (this.labelTimer >= fadeOutTime) {
-        this.labelState = LABEL_STATE.Hidden;
-        this.zoneLabelText.visible = false;
+        this.zoneLabelText.text = this.pendingLabel;
+        this.zoneLabelText.alpha = 0;
+        this.labelState = LABEL_STATE.FadingIn;
+        this.labelTimer = 0;
       }
     }
   }

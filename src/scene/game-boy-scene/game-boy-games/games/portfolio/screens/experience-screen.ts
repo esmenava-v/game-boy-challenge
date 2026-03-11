@@ -78,12 +78,6 @@ export default class ExperienceScreen extends GameScreenAbstract {
 
     this.player.update(dt);
 
-    // Clamp player to visible area (backtrack limit)
-    const visibleLeft = this.camera.getVisibleLeft();
-    if (this.player.worldX < visibleLeft) {
-      this.player.worldX = visibleLeft;
-    }
-
     this.camera.update(this.player.worldX);
     this.zoneManager.update(this.player.worldX, dt);
     this.uiOverlay.update(dt);

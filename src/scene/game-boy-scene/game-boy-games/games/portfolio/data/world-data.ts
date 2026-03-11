@@ -7,7 +7,7 @@ export interface SignData {
 }
 
 export interface DecorationData {
-  type: 'building' | 'tree' | 'lamp' | 'flag' | 'arch-building' | 'tower';
+  type: 'building' | 'tree' | 'lamp' | 'flag' | 'arch-building' | 'tower' | 'palm-tree' | 'church';
   worldX: number;
   width: number;
   height: number;
@@ -38,8 +38,8 @@ const ZONES: ZoneData[] = [
     label: 'STANFORD',
     startX: 0,
     endX: 280,
-    groundColor: 0xC4A882,
-    groundTopColor: 0xA0522D,
+    groundColor: 0x5B8C3E,
+    groundTopColor: 0x4A7A2E,
     sign: {
       title: 'STANFORD',
       role: 'B.S. Computer Science',
@@ -48,11 +48,13 @@ const ZONES: ZoneData[] = [
       worldX: 180,
     },
     decorations: [
-      { type: 'arch-building', worldX: 50, width: 44, height: 40, color: 0xD2B48C },
-      { type: 'tower', worldX: 110, width: 10, height: 56, color: 0xC4A070 },
-      { type: 'tree', worldX: 145, width: 8, height: 28, color: 0x228B22 },
-      { type: 'tree', worldX: 240, width: 8, height: 26, color: 0x2E8B57 },
-      { type: 'flag', worldX: 20, width: 6, height: 28, color: 0x8B0000 },
+      { type: 'flag', worldX: 8, width: 6, height: 28, color: 0x8B0000 },
+      { type: 'palm-tree', worldX: 30, width: 8, height: 30, color: 0x228B22 },
+      { type: 'church', worldX: 55, width: 50, height: 44, color: 0xD2B48C },
+      { type: 'tower', worldX: 120, width: 10, height: 56, color: 0xC4A070 },
+      { type: 'palm-tree', worldX: 145, width: 8, height: 32, color: 0x228B22 },
+      { type: 'palm-tree', worldX: 220, width: 8, height: 28, color: 0x228B22 },
+      { type: 'palm-tree', worldX: 255, width: 8, height: 30, color: 0x228B22 },
     ],
   },
   {

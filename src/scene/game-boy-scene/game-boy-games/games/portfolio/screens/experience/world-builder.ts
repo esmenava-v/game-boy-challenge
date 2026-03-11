@@ -173,6 +173,70 @@ export default class WorldBuilder {
           g.rect(0, 0, 2, dec.height).fill(0x888888);
           // Flag cloth
           g.rect(2, 2, dec.width - 2, 8).fill(dec.color);
+        } else if (dec.type === 'palm-tree') {
+          const cx = Math.floor(dec.width / 2);
+          const crownY = Math.floor(dec.height * 0.3);
+          // Trunk — slight taper: wider at base, thinner at top
+          g.moveTo(cx - 2, dec.height)
+            .lineTo(cx + 2, dec.height)
+            .lineTo(cx + 1, crownY + 2)
+            .lineTo(cx - 1, crownY + 2)
+            .closePath()
+            .fill(0x8B6914);
+          // Trunk segments (horizontal lines for texture)
+          for (let ty = crownY + 6; ty < dec.height - 2; ty += 4) {
+            g.rect(cx - 2, ty, 4, 1).fill(0x705410);
+          }
+          // Drooping fronds — 5 leaf shapes fanning out
+          const frondColor = dec.color;
+          const frondLen = Math.floor(dec.height * 0.38);
+          const angles = [-2.4, -1.3, -0.2, 0.9, 2.0]; // fan spread
+          for (const angle of angles) {
+            const tipX = cx + Math.round(Math.sin(angle) * frondLen);
+            const tipY = crownY - Math.round(Math.cos(angle) * frondLen * 0.5);
+            const midX = cx + Math.round(Math.sin(angle) * frondLen * 0.5);
+            const midY = crownY - Math.round(Math.cos(angle) * frondLen * 0.35);
+            // Each frond: a triangle from crown to tip with slight width
+            g.moveTo(cx, crownY)
+              .lineTo(midX - Math.round(Math.cos(angle) * 2), midY - Math.round(Math.sin(angle) * 2))
+              .lineTo(tipX, tipY)
+              .lineTo(midX + Math.round(Math.cos(angle) * 2), midY + Math.round(Math.sin(angle) * 2))
+              .closePath()
+              .fill(frondColor);
+          }
+          // Coconut cluster at the crown
+          g.circle(cx - 1, crownY + 1, 1.5).fill(0x8B6914);
+          g.circle(cx + 1, crownY + 1, 1.5).fill(0x8B6914);
+        } else if (dec.type === 'church') {
+          const w = dec.width;
+          const h = dec.height;
+          const bodyH = Math.floor(h * 0.7);
+          const bodyY = h - bodyH;
+          // Main sandstone body
+          g.rect(0, bodyY, w, bodyH).fill(dec.color);
+          // Red roof strip at top of body
+          g.rect(0, bodyY, w, 3).fill(0xB22222);
+          // Triangular pediment above body
+          g.moveTo(Math.floor(w / 2), 4)
+            .lineTo(w, bodyY)
+            .lineTo(0, bodyY)
+            .closePath()
+            .fill(0xC4A070);
+          // Cross at the peak
+          const crossX = Math.floor(w / 2);
+          g.rect(crossX - 1, 0, 2, 6).fill(0xC4A070);    // vertical
+          g.rect(crossX - 3, 2, 6, 2).fill(0xC4A070);    // horizontal
+          // Central arch opening
+          const archW = Math.floor(w * 0.28);
+          const archH = Math.floor(bodyH * 0.5);
+          const archX = Math.floor(w / 2) - Math.floor(archW / 2);
+          const archY = h - archH;
+          g.rect(archX, archY, archW, archH).fill(0x3A2718);
+          g.circle(archX + Math.floor(archW / 2), archY, Math.floor(archW / 2)).fill(0x3A2718);
+          // Small windows above arch
+          const winY = bodyY + 5;
+          g.rect(Math.floor(w * 0.2), winY, 3, 3).fill(0xFFFF99);
+          g.rect(Math.floor(w * 0.75), winY, 3, 3).fill(0xFFFF99);
         }
 
         g.x = dec.worldX;

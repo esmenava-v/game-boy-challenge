@@ -20,7 +20,13 @@ export default class ZoneManager {
     const zone = this.getZoneAtX(playerWorldX);
 
     if (zone !== this.currentZone) {
-      if (zone === this.pendingZone) {
+      // Show the first zone immediately — no debounce
+      if (this.currentZone === null && zone !== null) {
+        this.currentZone = zone;
+        this.pendingZone = null;
+        this.debounceTimer = 0;
+        this.events.emit('onZoneChange', zone);
+      } else if (zone === this.pendingZone) {
         this.debounceTimer += dt * 1000;
 
         if (this.debounceTimer >= this.debounceTime) {

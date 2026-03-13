@@ -26,6 +26,8 @@ export default class ExperienceScreen extends GameScreenAbstract {
 
   private isAtEnd: boolean;
   private endingText: Text;
+  private isAtExit: boolean;
+  private exitText: Text;
   private blinkTimer: TimeoutInstance;
   private blinkTime: number;
 
@@ -46,6 +48,8 @@ export default class ExperienceScreen extends GameScreenAbstract {
 
     this.isAtEnd = false;
     this.endingText = null;
+    this.isAtExit = false;
+    this.exitText = null;
     this.blinkTimer = null;
     this.blinkTime = 700;
 
@@ -55,9 +59,14 @@ export default class ExperienceScreen extends GameScreenAbstract {
   public show(): void {
     super.show();
     this.isAtEnd = false;
+    this.isAtExit = false;
 
     if (this.endingText) {
       this.endingText.visible = false;
+    }
+
+    if (this.exitText) {
+      this.exitText.visible = false;
     }
   }
 
@@ -72,7 +81,7 @@ export default class ExperienceScreen extends GameScreenAbstract {
       return;
     }
 
-    if (this.isAtEnd) {
+    if (this.isAtEnd || this.isAtExit) {
       return;
     }
 
@@ -91,6 +100,11 @@ export default class ExperienceScreen extends GameScreenAbstract {
     if (this.player.worldX >= PORTFOLIO_CONFIG.world.endZoneX) {
       this.showEnding();
     }
+
+    // Check if player walked back to the start
+    if (this.player.worldX <= 2) {
+      this.showExit();
+    }
   }
 
   public onButtonPress(buttonType: BUTTON_TYPE): void {
@@ -106,6 +120,16 @@ export default class ExperienceScreen extends GameScreenAbstract {
     if (this.isAtEnd) {
       if (buttonType === BUTTON_TYPE.Start || buttonType === BUTTON_TYPE.B) {
         this.events.emit('onReturnToTitle');
+      }
+      return;
+    }
+
+    // At the exit prompt — A/Start confirms, B cancels
+    if (this.isAtExit) {
+      if (buttonType === BUTTON_TYPE.A || buttonType === BUTTON_TYPE.Start) {
+        this.events.emit('onReturnToTitle');
+      } else if (buttonType === BUTTON_TYPE.B) {
+        this.hideExit();
       }
       return;
     }
@@ -152,6 +176,7 @@ export default class ExperienceScreen extends GameScreenAbstract {
 
   public reset(): void {
     this.isAtEnd = false;
+    this.isAtExit = false;
     this.player.worldX = 30;
     this.player.worldY = PORTFOLIO_CONFIG.world.groundY;
     this.player.setMovementState(PLAYER_STATE.Idle);
@@ -159,6 +184,10 @@ export default class ExperienceScreen extends GameScreenAbstract {
 
     if (this.endingText) {
       this.endingText.visible = false;
+    }
+
+    if (this.exitText) {
+      this.exitText.visible = false;
     }
   }
 
@@ -171,6 +200,7 @@ export default class ExperienceScreen extends GameScreenAbstract {
     this.initUI();
     this.initSignPopup();
     this.initEndingText();
+    this.initExitText();
 
     this.visible = false;
   }
@@ -246,6 +276,47 @@ export default class ExperienceScreen extends GameScreenAbstract {
     this.endingText.x = PORTFOLIO_CONFIG.screen.width * 0.5;
     this.endingText.y = PORTFOLIO_CONFIG.screen.height * 0.4;
     this.endingText.visible = false;
+  }
+
+  private initExitText(): void {
+    this.exitText = new Text({
+      text: 'EXIT?\n\n[A] YES  [B] NO',
+      style: {
+        fontFamily: 'dogicapixel',
+        fontSize: 8,
+        fill: 0x000000,
+        align: 'center',
+      },
+    });
+
+    this.addChild(this.exitText);
+    this.exitText.anchor.set(0.5, 0.5);
+    this.exitText.x = PORTFOLIO_CONFIG.screen.width * 0.5;
+    this.exitText.y = PORTFOLIO_CONFIG.screen.height * 0.4;
+    this.exitText.visible = false;
+  }
+
+  private showExit(): void {
+    if (this.isAtExit) return;
+
+    this.isAtExit = true;
+    this.player.setMovementState(PLAYER_STATE.Idle);
+    this.exitText.visible = true;
+    this.blinkExitText();
+  }
+
+  private hideExit(): void {
+    this.isAtExit = false;
+    this.stopTweens();
+    this.exitText.visible = false;
+    this.player.worldX = 30;
+  }
+
+  private blinkExitText(): void {
+    this.blinkTimer = Timeout.call(this.blinkTime, () => {
+      this.exitText.visible = !this.exitText.visible;
+      this.blinkExitText();
+    });
   }
 
   private showEnding(): void {

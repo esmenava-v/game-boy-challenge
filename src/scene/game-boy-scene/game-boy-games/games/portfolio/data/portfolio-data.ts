@@ -1,5 +1,5 @@
 enum PORTFOLIO_SCREEN_TYPE {
-  Title = 'TITLE',
+  Intro = 'INTRO',
   Experience = 'EXPERIENCE',
 }
 

@@ -1,7 +1,7 @@
 import { EventEmitter } from 'pixi.js';
 import GameAbstract from '../game-abstract';
 import { PORTFOLIO_SCREEN_TYPE } from './data/portfolio-data';
-import TitleScreen from './screens/title-screen';
+import IntroScreen from './screens/intro-screen';
 import ExperienceScreen from './screens/experience-screen';
 
 export default class Portfolio extends GameAbstract {
@@ -30,7 +30,7 @@ export default class Portfolio extends GameAbstract {
   public show(): void {
     super.show();
 
-    this.showScreen(PORTFOLIO_SCREEN_TYPE.Title);
+    this.showScreen(PORTFOLIO_SCREEN_TYPE.Intro);
   }
 
   public hide(): void {
@@ -74,9 +74,9 @@ export default class Portfolio extends GameAbstract {
   }
 
   private initScreens(): void {
-    const titleScreen = new TitleScreen();
-    this.addChild(titleScreen);
-    this.screens[PORTFOLIO_SCREEN_TYPE.Title] = titleScreen;
+    const introScreen = new IntroScreen();
+    this.addChild(introScreen);
+    this.screens[PORTFOLIO_SCREEN_TYPE.Intro] = introScreen;
 
     const experienceScreen = new ExperienceScreen();
     this.addChild(experienceScreen);
@@ -84,17 +84,17 @@ export default class Portfolio extends GameAbstract {
   }
 
   private initSignals(): void {
-    this.screens[PORTFOLIO_SCREEN_TYPE.Title].events.on('onStartGame', () => this.onStartGame());
+    this.screens[PORTFOLIO_SCREEN_TYPE.Intro].events.on('onIntroComplete', () => this.onIntroComplete());
     this.screens[PORTFOLIO_SCREEN_TYPE.Experience].events.on('onReturnToTitle', () => this.onReturnToTitle());
   }
 
-  private onStartGame(): void {
-    this.screens[PORTFOLIO_SCREEN_TYPE.Title].hide();
+  private onIntroComplete(): void {
+    this.screens[PORTFOLIO_SCREEN_TYPE.Intro].hide();
     this.showScreen(PORTFOLIO_SCREEN_TYPE.Experience);
   }
 
   private onReturnToTitle(): void {
     this.screens[PORTFOLIO_SCREEN_TYPE.Experience].hide();
-    this.showScreen(PORTFOLIO_SCREEN_TYPE.Title);
+    this.showScreen(PORTFOLIO_SCREEN_TYPE.Intro);
   }
 }

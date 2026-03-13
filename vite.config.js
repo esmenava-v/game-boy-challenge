@@ -14,7 +14,7 @@ export default {
     preview:
     {
         open: !isRailway,
-        allowedHosts: ['game-boy-challenge-production.up.railway.app']
+        allowedHosts: ['game-boy-challenge-production.up.railway.app', 'www.esmeraldanava.com']
     },
     build:
     {

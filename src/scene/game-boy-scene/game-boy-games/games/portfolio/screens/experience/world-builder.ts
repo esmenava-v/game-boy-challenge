@@ -6,6 +6,7 @@ interface SignSprite {
   container: Container;
   data: SignData;
   worldX: number;
+  indicator: Graphics;
 }
 
 export default class WorldBuilder {
@@ -14,6 +15,7 @@ export default class WorldBuilder {
   private backgroundLayer: Container;
   private signSprites: SignSprite[];
   private groundTiles: Graphics[];
+  private pulseTimer: number = 0;
 
   constructor(groundLayer: Container, decorationLayer: Container, backgroundLayer: Container) {
     this.groundLayer = groundLayer;
@@ -27,6 +29,14 @@ export default class WorldBuilder {
 
   public getSignSprites(): SignSprite[] {
     return this.signSprites;
+  }
+
+  public update(dt: number): void {
+    this.pulseTimer += dt * 5;
+    const alpha = 0.4 + 0.6 * (0.5 + 0.5 * Math.sin(this.pulseTimer));
+    for (const sign of this.signSprites) {
+      sign.indicator.alpha = alpha;
+    }
   }
 
   public cullTiles(visibleLeft: number, visibleRight: number): void {
@@ -276,6 +286,7 @@ export default class WorldBuilder {
         container,
         data: sign,
         worldX: sign.worldX,
+        indicator,
       });
     }
   }

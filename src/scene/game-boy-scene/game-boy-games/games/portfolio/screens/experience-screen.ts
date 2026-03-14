@@ -96,6 +96,8 @@ export default class ExperienceScreen extends GameScreenAbstract {
       this.camera.getVisibleRight()
     );
 
+    this.worldBuilder.update(dt);
+
     // Check if player reached the end
     if (this.player.worldX >= PORTFOLIO_CONFIG.world.endZoneX) {
       this.showEnding();

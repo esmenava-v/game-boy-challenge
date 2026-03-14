@@ -1,7 +1,7 @@
 import { Container, Graphics, Text } from 'pixi.js';
 import GameScreenAbstract from '../../shared/game-screen-abstract';
 import { BUTTON_TYPE } from '../../../../game-boy/data/game-boy-data';
-import { GAME_BOY_CONFIG } from '../../../../game-boy/data/game-boy-config';
+import { PORTFOLIO_CONFIG } from '../data/portfolio-config';
 import { Timeout, TimeoutInstance } from '../../../../../../core/helpers/timeout';
 
 export default class IntroScreen extends GameScreenAbstract {
@@ -98,82 +98,107 @@ export default class IntroScreen extends GameScreenAbstract {
     });
 
     t.anchor.set(0.5, 0);
-    t.x = GAME_BOY_CONFIG.screen.width * 0.5;
+    t.x = PORTFOLIO_CONFIG.screen.width * 0.5;
     t.y = y;
     parent.addChild(t);
 
     return t;
   }
 
-  private createPanel(x: number, y: number, w: number, h: number, parent: Container): void {
+  private createBackdrop(parent: Container): void {
+    const backdrop = new Graphics();
+    backdrop.rect(0, 0, PORTFOLIO_CONFIG.screen.width, PORTFOLIO_CONFIG.screen.height).fill({ color: 0x000000, alpha: 0.3 });
+    parent.addChild(backdrop);
+  }
+
+  private createPanel(boxX: number, boxY: number, boxW: number, boxH: number, parent: Container): void {
     const panel = new Graphics();
-    panel.rect(x, y, w, h).fill(0xFFFFFF);
-    panel.rect(x, y, w, h).stroke({ color: 0x000000, width: 1 });
+    panel.rect(boxX, boxY, boxW, boxH).fill(0xFFFFFF);
+    panel.rect(boxX, boxY, boxW, boxH).stroke({ color: 0x000000, width: 1 });
     parent.addChild(panel);
   }
 
-  private createSeparator(y: number, parent: Container): void {
+  private createSeparator(boxX: number, boxW: number, y: number, parent: Container): void {
     const sep = new Graphics();
-    const w = 60;
-    const x = (GAME_BOY_CONFIG.screen.width - w) / 2;
-    sep.rect(x, y, w, 1).fill(0xCCCCCC);
+    sep.rect(boxX + 8, y, boxW - 16, 1).fill(0xCCCCCC);
     parent.addChild(sep);
   }
 
   private initWelcomePage(): void {
+    const screenW = PORTFOLIO_CONFIG.screen.width;
+    const screenH = PORTFOLIO_CONFIG.screen.height;
+    const boxW = 140;
+    const boxH = 100;
+    const boxX = (screenW - boxW) / 2;
+    const boxY = (screenH - boxH) / 2;
+
     const page = new Container();
     page.visible = false;
     this.addChild(page);
     this.pages.push(page);
 
-    this.createPanel(15, 18, 130, 72, page);
-    this.createText('WELCOME TO', 0x000000, 28, page);
-    this.createSeparator(46, page);
-    this.createText('MY PORTFOLIO', 0x000000, 56, page);
-    this.createText('GAME BOY', 0x333333, 71, page);
+    this.createBackdrop(page);
+    this.createPanel(boxX, boxY, boxW, boxH, page);
+    this.createText('WELCOME TO', 0x000000, boxY + 18, page);
+    this.createSeparator(boxX, boxW, boxY + 34, page);
+    this.createText('MY PORTFOLIO', 0x000000, boxY + 42, page);
+    this.createText('GAME BOY', 0x333333, boxY + 56, page);
 
-    const blink = this.createText('[A] NEXT', 0x999999, 120, page);
+    const blink = this.createText('[A] NEXT', 0x999999, boxY + boxH - 14, page);
     this.blinkTexts.push(blink);
   }
 
   private initNamePage(): void {
+    const screenW = PORTFOLIO_CONFIG.screen.width;
+    const screenH = PORTFOLIO_CONFIG.screen.height;
+    const boxW = 140;
+    const boxH = 100;
+    const boxX = (screenW - boxW) / 2;
+    const boxY = (screenH - boxH) / 2;
+
     const page = new Container();
     page.visible = false;
     this.addChild(page);
     this.pages.push(page);
 
-    this.createPanel(15, 10, 130, 108, page);
-    this.createText('ESME NAVA', 0x000000, 20, page);
-    this.createSeparator(37, page);
-    this.createText('DESIGN', 0x333333, 45, page);
-    this.createText('ENGINEER', 0x333333, 57, page);
+    this.createBackdrop(page);
+    this.createPanel(boxX, boxY, boxW, boxH, page);
+    this.createText('ESME NAVA', 0x000000, boxY + 8, page);
+    this.createSeparator(boxX, boxW, boxY + 20, page);
+    this.createText('DESIGN', 0x333333, boxY + 26, page);
+    this.createText('ENGINEER', 0x333333, boxY + 38, page);
 
-    this.createText('BUILDING AT THE', 0x666666, 78, page);
-    this.createText('INTERSECTION OF', 0x666666, 90, page);
-    this.createText('CODE & DESIGN', 0x666666, 102, page);
+    this.createText('BUILDING AT THE', 0x666666, boxY + 54, page);
+    this.createText('INTERSECTION OF', 0x666666, boxY + 66, page);
 
-    const blink = this.createText('[A] NEXT', 0x999999, 130, page);
+    const blink = this.createText('[A] NEXT', 0x999999, boxY + boxH - 14, page);
     this.blinkTexts.push(blink);
   }
 
   private initHowToPlayPage(): void {
+    const screenW = PORTFOLIO_CONFIG.screen.width;
+    const screenH = PORTFOLIO_CONFIG.screen.height;
+    const boxW = 140;
+    const boxH = 100;
+    const boxX = (screenW - boxW) / 2;
+    const boxY = (screenH - boxH) / 2;
+
     const page = new Container();
     page.visible = false;
     this.addChild(page);
     this.pages.push(page);
 
-    this.createPanel(15, 6, 130, 108, page);
-    this.createText('HOW TO PLAY', 0x000000, 15, page);
-    this.createSeparator(30, page);
-    this.createText('USE ARROWS TO', 0x333333, 38, page);
-    this.createText('WALK & JUMP', 0x333333, 50, page);
+    this.createBackdrop(page);
+    this.createPanel(boxX, boxY, boxW, boxH, page);
+    this.createText('HOW TO PLAY', 0x000000, boxY + 8, page);
+    this.createSeparator(boxX, boxW, boxY + 20, page);
+    this.createText('USE ARROWS TO', 0x333333, boxY + 28, page);
+    this.createText('WALK & JUMP', 0x333333, boxY + 40, page);
 
-    this.createText('PRESS [A] NEAR', 0x333333, 68, page);
-    this.createText('SIGNS TO READ', 0x333333, 80, page);
+    this.createText('PRESS [A] NEAR', 0x333333, boxY + 56, page);
+    this.createText('SIGNS TO READ', 0x333333, boxY + 68, page);
 
-    this.createText('EXPLORE MY WORK', 0x666666, 97, page);
-
-    const blink = this.createText('[A] START', 0x999999, 128, page);
+    const blink = this.createText('[A] START', 0x999999, boxY + boxH - 14, page);
     this.blinkTexts.push(blink);
   }
 }

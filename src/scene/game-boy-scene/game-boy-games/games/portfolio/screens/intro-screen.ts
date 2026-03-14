@@ -139,10 +139,11 @@ export default class IntroScreen extends GameScreenAbstract {
 
     this.createBackdrop(page);
     this.createPanel(boxX, boxY, boxW, boxH, page);
-    this.createText('WELCOME TO', 0x000000, boxY + 18, page);
-    this.createSeparator(boxX, boxW, boxY + 34, page);
-    this.createText('MY PORTFOLIO', 0x000000, boxY + 42, page);
-    this.createText('GAME BOY', 0x333333, boxY + 56, page);
+    this.createText('ESME NAVA', 0x000000, boxY + 12, page);
+    this.createSeparator(boxX, boxW, boxY + 28, page);
+    this.createText('WELCOME TO MY', 0x333333, boxY + 36, page);
+    this.createText('PORTFOLIO', 0x333333, boxY + 48, page);
+    this.createText('GAME BOY EDITION', 0x666666, boxY + 62, page);
 
     const blink = this.createText('[A] NEXT', 0x999999, boxY + boxH - 14, page);
     this.blinkTexts.push(blink);
@@ -163,13 +164,11 @@ export default class IntroScreen extends GameScreenAbstract {
 
     this.createBackdrop(page);
     this.createPanel(boxX, boxY, boxW, boxH, page);
-    this.createText('ESME NAVA', 0x000000, boxY + 8, page);
-    this.createSeparator(boxX, boxW, boxY + 20, page);
-    this.createText('DESIGN', 0x333333, boxY + 26, page);
-    this.createText('ENGINEER', 0x333333, boxY + 38, page);
-
-    this.createText('BUILDING AT THE', 0x666666, boxY + 54, page);
-    this.createText('INTERSECTION OF', 0x666666, boxY + 66, page);
+    this.createText('I\'M A', 0x000000, boxY + 8, page);
+    this.createText('DESIGN ENGINEER', 0x000000, boxY + 20, page);
+    this.createSeparator(boxX, boxW, boxY + 36, page);
+    this.createText('I LIKE TO USE', 0x333333, boxY + 44, page);
+    this.createText('CODE AS ART', 0x333333, boxY + 56, page);
 
     const blink = this.createText('[A] NEXT', 0x999999, boxY + boxH - 14, page);
     this.blinkTexts.push(blink);

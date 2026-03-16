@@ -16,6 +16,10 @@ export default class WorldBuilder {
   private signSprites: SignSprite[];
   private groundTiles: Graphics[];
   private pulseTimer: number = 0;
+  private ytScreen: Graphics | null = null;
+  private ytScreenTimer: number = 0;
+  private trophyShimmer: Graphics | null = null;
+  private cameraLight: Graphics | null = null;
 
   constructor(groundLayer: Container, decorationLayer: Container, backgroundLayer: Container) {
     this.groundLayer = groundLayer;
@@ -37,6 +41,44 @@ export default class WorldBuilder {
     for (const sign of this.signSprites) {
       sign.indicator.alpha = alpha;
     }
+
+    // Animate yt-screen — funny cat videos on loop
+    if (this.ytScreen) {
+      this.ytScreenTimer += dt;
+      const timer = this.ytScreenTimer;
+      const g = this.ytScreen;
+      g.clear();
+      this.drawYtScreenFrame(g);
+
+      const videoDuration = 5.0;
+      const videoCount = 3;
+      const videoIndex = Math.floor(timer / videoDuration) % videoCount;
+      const videoTime = timer % videoDuration;
+      const progressWidth = Math.floor((videoTime / videoDuration) * 20);
+
+      // Screen background
+      g.rect(2, 2, 20, 11).fill(0x6699BB);
+
+      this.drawCatVideo(g, videoIndex, videoTime);
+
+      // Progress bar track
+      g.rect(2, 12, 20, 1).fill(0x444444);
+      // Red progress bar
+      if (progressWidth > 0) {
+        g.rect(2, 12, progressWidth, 1).fill(0xFF0000);
+      }
+    }
+
+    // Trophy shimmer animation
+    if (this.trophyShimmer) {
+      const shimmerX = 2 + Math.floor((Math.sin(this.pulseTimer * 0.3) * 0.5 + 0.5) * 10);
+      this.trophyShimmer.x = shimmerX;
+    }
+
+    // Camera recording dot blink
+    if (this.cameraLight) {
+      this.cameraLight.alpha = 0.5 + 0.5 * Math.sin(this.pulseTimer * 0.8);
+    }
   }
 
   public cullTiles(visibleLeft: number, visibleRight: number): void {
@@ -51,6 +93,7 @@ export default class WorldBuilder {
 
   private build(): void {
     this.buildClouds();
+    this.buildSkyline();
     this.buildGround();
     this.buildDecorations();
     this.buildSigns();
@@ -66,7 +109,7 @@ export default class WorldBuilder {
       this.backgroundLayer.addChild(g);
     }
 
-    // Distant hills
+    // Hills — drawn after clouds so they appear in front
     const hills = new Graphics();
     hills.rect(0, 60, PORTFOLIO_CONFIG.world.width, 30).fill(0xBBCCBB);
     for (let hx = 0; hx < PORTFOLIO_CONFIG.world.width; hx += 80) {
@@ -74,6 +117,68 @@ export default class WorldBuilder {
       hills.ellipse(hx + 40, 60, 50, hillH).fill(0xAABBAA);
     }
     this.backgroundLayer.addChild(hills);
+  }
+
+  private buildSkyline(): void {
+    const groundY = 128;
+    const soft = 0xCCDDEE;
+    const g = new Graphics();
+
+    // === Simplified SF Skyline (bgX ~400–552) ===
+    // Light, subtle silhouettes that don't compete with foreground
+
+    g.rect(400, groundY - 18, 12, 18).fill(soft);
+    g.rect(416, groundY - 28, 10, 28).fill(soft);
+    // Transamerica Pyramid — simple triangle
+    g.moveTo(437, groundY - 42).lineTo(430, groundY).lineTo(444, groundY).closePath().fill(soft);
+    g.rect(450, groundY - 32, 12, 32).fill(soft);
+    // Salesforce Tower
+    g.roundRect(470, groundY - 48, 8, 48, 3).fill(soft);
+    g.rect(484, groundY - 24, 14, 24).fill(soft);
+    g.rect(504, groundY - 34, 10, 34).fill(soft);
+    g.rect(520, groundY - 16, 14, 16).fill(soft);
+
+    // === Golden Gate Bridge (bgX ~610–700) ===
+    const red = 0xCC5533;
+    const darkRed = 0xAA3311;
+
+    // Left tower — Art Deco stepped profile
+    g.rect(620, groundY - 60, 6, 60).fill(red);
+    g.rect(618, groundY - 60, 10, 3).fill(red);
+    g.rect(619, groundY - 42, 8, 3).fill(darkRed);
+    // Right tower
+    g.rect(686, groundY - 60, 6, 60).fill(red);
+    g.rect(684, groundY - 60, 10, 3).fill(red);
+    g.rect(685, groundY - 42, 8, 3).fill(darkRed);
+
+    // Main cable — two parallel catenary lines for thickness
+    const cL = 623;
+    const cR = 689;
+    const cTopY = groundY - 58;
+    const cMidY = groundY - 36;
+    for (let i = 0; i <= 14; i++) {
+      const t = i / 14;
+      const x = cL + (cR - cL) * t;
+      const droop = 4 * t * (1 - t);
+      const y = cTopY + (cMidY - cTopY) * droop;
+      g.rect(Math.round(x), Math.round(y), 2, 2).fill(red);
+
+      // Vertical suspender cables every few steps
+      if (i > 0 && i < 14 && i % 2 === 0) {
+        const deckTop = groundY - 22;
+        g.rect(Math.round(x), Math.round(y) + 2, 1, deckTop - Math.round(y) - 2).fill(red);
+      }
+    }
+
+    // Road deck — two-tone for depth
+    g.rect(616, groundY - 22, 80, 2).fill(darkRed);
+    g.rect(616, groundY - 20, 80, 3).fill(red);
+    // Top railing
+    g.rect(616, groundY - 24, 80, 1).fill(red);
+    // Bottom railing
+    g.rect(616, groundY - 17, 80, 1).fill(darkRed);
+
+    this.backgroundLayer.addChild(g);
   }
 
   private buildGround(): void {
@@ -217,6 +322,139 @@ export default class WorldBuilder {
           // Coconut cluster at the crown
           g.circle(cx - 1, crownY + 1, 1.5).fill(0x8B6914);
           g.circle(cx + 1, crownY + 1, 1.5).fill(0x8B6914);
+        } else if (dec.type === 'yt-headquarters') {
+          const w = dec.width;
+          const h = dec.height;
+          // Main building body
+          g.rect(0, 0, w, h).fill(dec.color);
+          // Flat dark roof strip
+          g.rect(-1, -3, w + 2, 4).fill(0x555555);
+          // Tinted window panels — 2 rows
+          const winW = 8;
+          const winH = 6;
+          for (let row = 0; row < 2; row++) {
+            const wy = 6 + row * 14;
+            for (let wx = 5; wx + winW < w - 2; wx += winW + 3) {
+              g.rect(wx, wy, winW, winH).fill(0x88AACC);
+            }
+          }
+          // RED play-button triangle centered on facade
+          const cx = Math.floor(w / 2);
+          const cy = Math.floor(h / 2) + 2;
+          const triSize = 7;
+          // Red rounded rectangle background
+          g.roundRect(cx - triSize - 3, cy - triSize - 1, triSize * 2 + 6, triSize * 2 + 2, 3).fill(0xFF0000);
+          // White play triangle
+          g.moveTo(cx - Math.floor(triSize * 0.5), cy - triSize + 2)
+            .lineTo(cx + Math.floor(triSize * 0.7), cy)
+            .lineTo(cx - Math.floor(triSize * 0.5), cy + triSize - 2)
+            .closePath()
+            .fill(0xFFFFFF);
+          // Glass door at bottom center
+          g.rect(cx - 4, h - 10, 8, 10).fill(0x88AACC);
+          g.rect(cx, h - 10, 1, 10).fill(0x6688AA);
+        } else if (dec.type === 'google-bike') {
+          const blk = 0x111111;
+          const frm = dec.color;
+          // Pixel-art bike — all rects for chunky blocky look
+          // Left wheel (pixel octagon)
+          g.rect(2, 5, 3, 1).fill(blk);
+          g.rect(1, 6, 1, 1).fill(blk);
+          g.rect(5, 6, 1, 1).fill(blk);
+          g.rect(0, 7, 1, 2).fill(blk);
+          g.rect(6, 7, 1, 2).fill(blk);
+          g.rect(1, 9, 1, 1).fill(blk);
+          g.rect(5, 9, 1, 1).fill(blk);
+          g.rect(2, 10, 3, 1).fill(blk);
+          // Right wheel (same shape, offset +9)
+          g.rect(11, 5, 3, 1).fill(blk);
+          g.rect(10, 6, 1, 1).fill(blk);
+          g.rect(14, 6, 1, 1).fill(blk);
+          g.rect(9, 7, 1, 2).fill(blk);
+          g.rect(15, 7, 1, 2).fill(blk);
+          g.rect(10, 9, 1, 1).fill(blk);
+          g.rect(14, 9, 1, 1).fill(blk);
+          g.rect(11, 10, 3, 1).fill(blk);
+          // Frame — top tube
+          g.rect(5, 3, 6, 1).fill(frm);
+          // Seat tube (down-left diagonal)
+          g.rect(4, 4, 2, 1).fill(frm);
+          g.rect(3, 5, 2, 1).fill(frm);
+          g.rect(2, 6, 2, 1).fill(frm);
+          // Down tube (down-right diagonal)
+          g.rect(10, 4, 2, 1).fill(frm);
+          g.rect(11, 5, 2, 1).fill(frm);
+          g.rect(12, 6, 2, 1).fill(frm);
+          // Chain stay (bottom horizontal)
+          g.rect(3, 7, 10, 1).fill(frm);
+          // Seat (black)
+          g.rect(4, 1, 3, 1).fill(blk);
+          g.rect(5, 2, 1, 1).fill(blk);
+          // Handlebar (black)
+          g.rect(11, 1, 1, 2).fill(blk);
+          g.rect(10, 2, 3, 1).fill(blk);
+        } else if (dec.type === 'android-statue') {
+          const w = dec.width;
+          const h = dec.height;
+          const bodyW = w - 2;
+          const bodyH = Math.floor(h * 0.45);
+          const bodyX = 1;
+          const bodyY = Math.floor(h * 0.3);
+          const green = dec.color;
+          // Body — rounded rectangle
+          g.roundRect(bodyX, bodyY, bodyW, bodyH, 2).fill(green);
+          // Head — semicircle on top of body
+          const headR = Math.floor(bodyW / 2);
+          g.arc(Math.floor(w / 2), bodyY, headR, Math.PI, 0).fill(green);
+          // Eyes — two small white dots
+          g.circle(Math.floor(w / 2) - 2, bodyY - Math.floor(headR * 0.4), 1).fill(0xFFFFFF);
+          g.circle(Math.floor(w / 2) + 2, bodyY - Math.floor(headR * 0.4), 1).fill(0xFFFFFF);
+          // Antennae
+          g.moveTo(Math.floor(w / 2) - 2, bodyY - headR + 2)
+            .lineTo(Math.floor(w / 2) - 3, bodyY - headR - 2)
+            .stroke({ color: green, width: 1 });
+          g.moveTo(Math.floor(w / 2) + 2, bodyY - headR + 2)
+            .lineTo(Math.floor(w / 2) + 3, bodyY - headR - 2)
+            .stroke({ color: green, width: 1 });
+          // Arms — small rectangles on sides
+          g.roundRect(bodyX - 2, bodyY + 2, 2, bodyH - 4, 1).fill(green);
+          g.roundRect(bodyX + bodyW, bodyY + 2, 2, bodyH - 4, 1).fill(green);
+          // Legs — two small rectangles at bottom
+          g.roundRect(bodyX + 1, bodyY + bodyH, 2, 4, 1).fill(green);
+          g.roundRect(bodyX + bodyW - 3, bodyY + bodyH, 2, 4, 1).fill(green);
+        } else if (dec.type === 'food-cart') {
+          const w = dec.width;
+          const h = dec.height;
+          const cartH = Math.floor(h * 0.5);
+          const cartY = h - cartH - 3;
+          // Cart body
+          g.rect(1, cartY, w - 2, cartH).fill(dec.color);
+          // Serving window
+          g.rect(3, cartY + 2, w - 6, Math.floor(cartH * 0.5)).fill(0xFFFFDD);
+          // Wheels
+          g.circle(4, h - 1, 2).fill(0x555555);
+          g.circle(w - 4, h - 1, 2).fill(0x555555);
+          // Awning — striped canopy on top
+          const awningY = cartY - 4;
+          const awningH = 4;
+          g.rect(0, awningY, w, awningH).fill(0xCC3333);
+          // White stripes
+          for (let sx = 0; sx < w; sx += 4) {
+            g.rect(sx, awningY, 2, awningH).fill(0xFFFFFF);
+          }
+          // Awning support poles
+          g.rect(1, awningY, 1, cartY - awningY + 2).fill(0x8B6914);
+          g.rect(w - 2, awningY, 1, cartY - awningY + 2).fill(0x8B6914);
+        } else if (dec.type === 'bench') {
+          const w = dec.width;
+          const h = dec.height;
+          // Two legs
+          g.rect(1, Math.floor(h * 0.4), 2, Math.floor(h * 0.6)).fill(0x5C4A1E);
+          g.rect(w - 3, Math.floor(h * 0.4), 2, Math.floor(h * 0.6)).fill(0x5C4A1E);
+          // Seat plank
+          g.rect(0, Math.floor(h * 0.4), w, 2).fill(dec.color);
+          // Backrest
+          g.rect(0, Math.floor(h * 0.1), w, 2).fill(dec.color);
         } else if (dec.type === 'church') {
           const w = dec.width;
           const h = dec.height;
@@ -247,11 +485,582 @@ export default class WorldBuilder {
           const winY = bodyY + 5;
           g.rect(Math.floor(w * 0.2), winY, 3, 3).fill(0xFFFF99);
           g.rect(Math.floor(w * 0.75), winY, 3, 3).fill(0xFFFF99);
+        } else if (dec.type === 'lab-building') {
+          const w = dec.width;
+          const h = dec.height;
+          // Main building body — light gray-white
+          g.rect(0, 0, w, h).fill(0xF0F0F5);
+          // Lavender roof accent strip
+          g.rect(-2, -3, w + 4, 4).fill(dec.color);
+          // Rounded-corner lavender windows — 2 rows of 3
+          const winW = 6;
+          const winH = 5;
+          const winGapX = Math.floor((w - 6 - winW * 3) / 2);
+          for (let row = 0; row < 2; row++) {
+            const wy = 6 + row * 11;
+            for (let col = 0; col < 3; col++) {
+              const wx = 3 + col * (winW + winGapX);
+              g.roundRect(wx, wy, winW, winH, 1).fill(dec.color);
+            }
+          }
+          // Glass door with divider
+          const doorW = 8;
+          const doorH = 10;
+          const doorX = Math.floor(w / 2) - Math.floor(doorW / 2);
+          g.rect(doorX, h - doorH, doorW, doorH).fill(0x88AACC);
+          g.rect(doorX + Math.floor(doorW / 2), h - doorH, 1, doorH).fill(0x6688AA);
+          // Tiny molecule "M" logo above door — 3 small lavender circles
+          const logoY = h - doorH - 5;
+          const logoCX = Math.floor(w / 2);
+          g.circle(logoCX - 3, logoY, 1.5).fill(dec.color);
+          g.circle(logoCX, logoY - 2, 1.5).fill(dec.color);
+          g.circle(logoCX + 3, logoY, 1.5).fill(dec.color);
+        } else if (dec.type === 'microscope') {
+          const charcoal = 0x242C32;
+          const cx = Math.floor(dec.width / 2);
+          // Rounded base
+          g.roundRect(0, dec.height - 4, dec.width, 4, 2).fill(charcoal);
+          // Vertical pillar
+          g.rect(cx - 1, 6, 3, dec.height - 10).fill(charcoal);
+          // Arm extending right with specimen stage
+          g.rect(cx, 10, 6, 2).fill(charcoal);
+          // Specimen stage (small platform)
+          g.rect(cx + 4, 12, 4, 2).fill(charcoal);
+          // Angled eyepiece tube
+          g.moveTo(cx - 1, 6)
+            .lineTo(cx - 4, 0)
+            .lineTo(cx - 2, 0)
+            .lineTo(cx + 1, 6)
+            .closePath()
+            .fill(charcoal);
+          // Eyepiece lens circle
+          g.circle(cx - 3, 0, 2).fill(charcoal);
+          // Green glowing dot on stage (active sample)
+          g.circle(cx + 6, 12, 1.5).fill(0x66FF66);
+        } else if (dec.type === 'dna-helix') {
+          const lavender = 0xA2ABFB;
+          const peach = 0xFADAB8;
+          const green = 0xC3E5B2;
+          const steps = 9;
+          const stepH = Math.floor(dec.height / steps);
+          const cx = Math.floor(dec.width / 2);
+          const amplitude = Math.floor(dec.width / 2) - 1;
+          // Two sinusoidal strands with connecting rungs
+          for (let i = 0; i < steps; i++) {
+            const y = i * stepH;
+            const offset = Math.sin((i / steps) * Math.PI * 2) * amplitude;
+            const x1 = cx + Math.round(offset);
+            const x2 = cx - Math.round(offset);
+            // Strand 1 (lavender) and strand 2 (peach)
+            g.rect(x1, y, 2, stepH).fill(lavender);
+            g.rect(x2, y, 2, stepH).fill(peach);
+            // Green horizontal rung (base pair)
+            if (i % 2 === 0) {
+              const minX = Math.min(x1, x2);
+              const maxX = Math.max(x1, x2);
+              g.rect(minX + 1, y + Math.floor(stepH / 2), maxX - minX, 1).fill(green);
+            }
+          }
+          // Dark pedestal at bottom
+          g.rect(1, dec.height - 3, dec.width - 2, 3).fill(0x242C32);
+        } else if (dec.type === 'yc-logo') {
+          const w = dec.width;
+          const h = dec.height;
+          const orange = dec.color;
+          const white = 0xFFFFFF;
+          // Dark pedestal/post (same style as molecule-logo)
+          const postH = 4;
+          const cx = Math.floor(w / 2);
+          g.rect(cx - 3, h - postH, 6, postH).fill(0x242C32);
+          // Orange rounded square background above the post
+          const logoSize = h - postH;
+          g.roundRect(0, 0, w, logoSize, 2).fill(orange);
+          // "Y" on the left half — two diagonal strokes meeting at center, vertical stroke down
+          const yMidX = Math.floor(w * 0.3);
+          // Left arm of Y
+          g.rect(yMidX - 3, 3, 2, 2).fill(white);
+          g.rect(yMidX - 2, 5, 2, 2).fill(white);
+          // Right arm of Y
+          g.rect(yMidX + 1, 3, 2, 2).fill(white);
+          g.rect(yMidX, 5, 2, 2).fill(white);
+          // Vertical stem of Y
+          g.rect(yMidX - 1, 7, 2, 4).fill(white);
+          // "C" on the right half — vertical stroke with horizontal caps
+          const cLeftX = Math.floor(w * 0.6);
+          // Top horizontal bar
+          g.rect(cLeftX, 3, 4, 2).fill(white);
+          // Vertical left stroke
+          g.rect(cLeftX, 3, 2, 8).fill(white);
+          // Bottom horizontal bar
+          g.rect(cLeftX, 9, 4, 2).fill(white);
+        } else if (dec.type === 'molecule-logo') {
+          const w = dec.width;
+          const h = dec.height;
+          const lavender = dec.color;
+          // Dark pedestal/post
+          const postH = 4;
+          const cx = Math.floor(w / 2);
+          g.rect(cx - 3, h - postH, 6, postH).fill(0x242C32);
+          // Mantle Bio blobby M logo — two zigzag rows of large overlapping circles
+          const r = 3.5;
+          const peakY = 2;
+          const valleyY = 6;
+          const spacing = 4.5;
+          // Top band: 5 blobs zigzagging — peaks up, valleys down
+          const topBlobs = [
+            { x: 2, y: valleyY },
+            { x: 2 + spacing, y: peakY },
+            { x: cx, y: valleyY },
+            { x: w - 2 - spacing, y: peakY },
+            { x: w - 2, y: valleyY },
+          ];
+          // Bottom band: mirrored — valleys up, peaks down
+          const mirrorY = h - postH;
+          const botBlobs = [
+            { x: 2, y: mirrorY - valleyY },
+            { x: 2 + spacing, y: mirrorY - peakY },
+            { x: cx, y: mirrorY - valleyY },
+            { x: w - 2 - spacing, y: mirrorY - peakY },
+            { x: w - 2, y: mirrorY - valleyY },
+          ];
+          for (const b of topBlobs) {
+            g.circle(b.x, b.y, r).fill(lavender);
+          }
+          for (const b of botBlobs) {
+            g.circle(b.x, b.y, r).fill(lavender);
+          }
+        } else if (dec.type === 'planter-box') {
+          const w = dec.width;
+          const h = dec.height;
+          // Peach-colored rounded rect planter
+          g.roundRect(0, Math.floor(h * 0.3), w, Math.floor(h * 0.7), 2).fill(0xFADAB8);
+          // Dark brown soil line
+          g.rect(1, Math.floor(h * 0.3), w - 2, 2).fill(0x5C3A1E);
+          // Three small green plant tufts with stems
+          const turfY = Math.floor(h * 0.3);
+          const stemH = 3;
+          const positions = [3, Math.floor(w / 2), w - 3];
+          for (const px of positions) {
+            // Stem
+            g.rect(px, turfY - stemH, 1, stemH).fill(0x228B22);
+            // Leaf circle
+            g.circle(px, turfY - stemH - 1, 2).fill(dec.color);
+          }
+        } else if (dec.type === 'barrier') {
+          const w = dec.width;
+          const h = dec.height;
+          // Sawhorse legs (A-frame)
+          g.moveTo(0, h).lineTo(2, Math.floor(h * 0.5)).lineTo(4, h).closePath().fill(0x8B6914);
+          g.moveTo(w - 4, h).lineTo(w - 2, Math.floor(h * 0.5)).lineTo(w, h).closePath().fill(0x8B6914);
+          // Horizontal bar with alternating yellow/black stripes
+          const barY = Math.floor(h * 0.3);
+          const barH = 4;
+          g.rect(0, barY, w, barH).fill(dec.color);
+          for (let sx = 0; sx < w; sx += 4) {
+            g.moveTo(sx, barY).lineTo(sx + 2, barY).lineTo(sx + 4, barY + barH).lineTo(sx + 2, barY + barH).closePath().fill(0x333333);
+          }
+        } else if (dec.type === 'safety-cone') {
+          const w = dec.width;
+          const h = dec.height;
+          // Dark gray base
+          g.rect(0, h - 2, w, 2).fill(0x555555);
+          // Tapered body — 3 sections
+          const bodyBottom = h - 2;
+          const sec1W = w;
+          const sec2W = Math.floor(w * 0.7);
+          const sec3W = Math.floor(w * 0.4);
+          const secH = Math.floor((bodyBottom) / 3);
+          const cx = Math.floor(w / 2);
+          // Bottom section
+          g.rect(cx - Math.floor(sec1W / 2), bodyBottom - secH, sec1W, secH).fill(dec.color);
+          // White stripe
+          g.rect(cx - Math.floor(sec1W / 2), bodyBottom - secH, sec1W, 1).fill(0xFFFFFF);
+          // Middle section
+          g.rect(cx - Math.floor(sec2W / 2), bodyBottom - secH * 2, sec2W, secH).fill(dec.color);
+          // White stripe
+          g.rect(cx - Math.floor(sec2W / 2), bodyBottom - secH * 2, sec2W, 1).fill(0xFFFFFF);
+          // Top section
+          g.rect(cx - Math.floor(sec3W / 2), bodyBottom - secH * 3, sec3W, secH).fill(dec.color);
+          // Rounded tip
+          g.circle(cx, bodyBottom - secH * 3, 1.5).fill(dec.color);
+        } else if (dec.type === 'material-pile') {
+          const w = dec.width;
+          const h = dec.height;
+          // Sand mound on the left
+          g.ellipse(Math.floor(w * 0.3), h - 2, Math.floor(w * 0.35), Math.floor(h * 0.5)).fill(0xDEB887);
+          // Lighter highlight on mound
+          g.ellipse(Math.floor(w * 0.25), h - 4, Math.floor(w * 0.2), Math.floor(h * 0.25)).fill(0xE8D4A8);
+          // Shovel — diagonal handle
+          g.moveTo(Math.floor(w * 0.5), h - 2).lineTo(Math.floor(w * 0.6), 0).stroke({ color: 0x8B6914, width: 1 });
+          // Shovel blade
+          g.rect(Math.floor(w * 0.57), 0, 3, 4).fill(0x888888);
+          // Stacked yellow blocks on right (2 bottom, 1 top)
+          const blockW = 5;
+          const blockH = 4;
+          const bx = Math.floor(w * 0.65);
+          g.rect(bx, h - blockH, blockW, blockH).fill(dec.color);
+          g.rect(bx + blockW + 1, h - blockH, blockW, blockH).fill(dec.color);
+          g.rect(bx + Math.floor(blockW / 2), h - blockH * 2, blockW, blockH).fill(0xD4A840);
+        } else if (dec.type === 'crane') {
+          const w = dec.width;
+          const h = dec.height;
+          const cx = Math.floor(w * 0.35);
+          // Base footing — wide dark gray pad
+          g.rect(cx - 6, h - 4, 12, 4).fill(0x666666);
+          // Lattice mast — two vertical rails with rungs
+          const mastW = 6;
+          const mastLeft = cx - Math.floor(mastW / 2);
+          g.rect(mastLeft, 8, 2, h - 12).fill(0xD4A840);
+          g.rect(mastLeft + mastW - 2, 8, 2, h - 12).fill(0xD4A840);
+          // Horizontal rungs every 6px
+          for (let ry = 14; ry < h - 6; ry += 6) {
+            g.rect(mastLeft, ry, mastW, 1).fill(0xD4A840);
+          }
+          // Operator cab near top
+          const cabY = 10;
+          g.roundRect(mastLeft - 1, cabY, mastW + 2, 6, 1).fill(dec.color);
+          // Cab window
+          g.rect(mastLeft + 1, cabY + 1, 3, 3).fill(0x88CCFF);
+          // Boom arm extending right from mast top
+          const boomY = 8;
+          g.rect(cx, boomY, 16, 2).fill(dec.color);
+          // Counter-jib extending left
+          g.rect(cx - 10, boomY, 10, 2).fill(dec.color);
+          // Counterweight block
+          g.rect(cx - 10, boomY, 4, 4).fill(0x444444);
+          // Hook cable dangling from boom tip
+          const hookX = cx + 15;
+          g.rect(hookX, boomY + 2, 1, 10).fill(0x666666);
+          // Tiny hard hat hanging from hook
+          g.roundRect(hookX - 2, boomY + 12, 5, 3, 1).fill(dec.color);
+          g.rect(hookX - 1, boomY + 11, 3, 2).fill(dec.color);
+        } else if (dec.type === 'scaffold') {
+          const w = dec.width;
+          const h = dec.height;
+          // Two vertical metal poles
+          g.rect(0, 0, 2, h).fill(dec.color);
+          g.rect(w - 2, 0, 2, h).fill(dec.color);
+          // Horizontal wooden planks every ~10px
+          for (let py = h - 2; py >= 0; py -= 10) {
+            g.rect(0, py, w, 2).fill(0x8B6914);
+          }
+          // X-brace diagonals
+          for (let sy = 0; sy < h - 10; sy += 10) {
+            g.moveTo(2, sy).lineTo(w - 2, sy + 10).stroke({ color: dec.color, width: 1 });
+            g.moveTo(w - 2, sy).lineTo(2, sy + 10).stroke({ color: dec.color, width: 1 });
+          }
+          // Yellow hard hat sitting on top plank
+          g.roundRect(Math.floor(w / 2) - 4, -3, 8, 4, 2).fill(0xF2C94C);
+          g.rect(Math.floor(w / 2) - 3, -1, 6, 2).fill(0xF2C94C);
+        } else if (dec.type === 'mini-excavator') {
+          const w = dec.width;
+          const h = dec.height;
+          // Treads — dark rounded rect base
+          g.roundRect(0, h - 5, Math.floor(w * 0.65), 5, 2).fill(0x444444);
+          // Tread detail lines
+          g.rect(2, h - 4, Math.floor(w * 0.65) - 4, 1).fill(0x333333);
+          // Cab — yellow rounded rect on treads
+          const cabW = Math.floor(w * 0.4);
+          const cabH = Math.floor(h * 0.45);
+          const cabX = 2;
+          const cabY = h - 5 - cabH;
+          g.roundRect(cabX, cabY, cabW, cabH, 2).fill(dec.color);
+          // Round blue window "eye"
+          const eyeX = cabX + Math.floor(cabW * 0.55);
+          const eyeY = cabY + Math.floor(cabH * 0.35);
+          g.circle(eyeX, eyeY, 2.5).fill(0x88CCFF);
+          // Highlight dot on eye
+          g.circle(eyeX + 1, eyeY - 1, 0.8).fill(0xFFFFFF);
+          // Exhaust pipe on top
+          g.rect(cabX + 1, cabY - 2, 2, 2).fill(0x555555);
+          // Arm extends right — upper segment
+          const armStartX = cabX + cabW;
+          const armStartY = cabY + 2;
+          g.rect(armStartX, armStartY, Math.floor(w * 0.35), 2).fill(dec.color);
+          // Forearm angling down
+          const forearmX = armStartX + Math.floor(w * 0.35);
+          g.moveTo(forearmX, armStartY).lineTo(forearmX + 3, armStartY + 6).lineTo(forearmX + 1, armStartY + 6).lineTo(forearmX - 2, armStartY).closePath().fill(dec.color);
+          // Bucket at end
+          g.rect(forearmX, armStartY + 6, 4, 3).fill(0x888888);
+          // Bucket teeth
+          g.rect(forearmX, armStartY + 9, 1, 1).fill(0x666666);
+          g.rect(forearmX + 2, armStartY + 9, 1, 1).fill(0x666666);
+        } else if (dec.type === 'building-wip') {
+          const w = dec.width;
+          const h = dec.height;
+          const brickColor = 0xC4956A;
+          const brickDark = 0xA07850;
+          const mortar = 0xD9C4A8;
+          const rebar = 0x888888;
+          // Concrete foundation
+          g.rect(0, h - 4, w, 4).fill(0x999999);
+          // Completed lower half — brick wall
+          const brickH = Math.floor(h * 0.55);
+          const brickTop = h - 4 - brickH;
+          g.rect(0, brickTop, w, brickH).fill(mortar);
+          // Brick pattern rows
+          const bw = 5;
+          const bh = 3;
+          for (let row = 0; row < Math.floor(brickH / bh); row++) {
+            const by = brickTop + row * bh;
+            const offset = row % 2 === 0 ? 0 : Math.floor(bw / 2);
+            for (let bx = offset; bx < w; bx += bw + 1) {
+              const clampedW = Math.min(bw, w - bx);
+              if (clampedW > 1) {
+                g.rect(bx, by, clampedW, bh - 1).fill(brickColor);
+              }
+            }
+          }
+          // Window opening in the brick section
+          const winW = 6;
+          const winH = 5;
+          const winX = Math.floor(w / 2) - Math.floor(winW / 2);
+          const winY = brickTop + 4;
+          g.rect(winX, winY, winW, winH).fill(0x88CCFF);
+          g.rect(winX + Math.floor(winW / 2), winY, 1, winH).fill(0x6699BB);
+          // Second window on left
+          g.rect(4, winY, winW, winH).fill(0x88CCFF);
+          g.rect(4 + Math.floor(winW / 2), winY, 1, winH).fill(0x6699BB);
+          // Upper unfinished section — exposed concrete columns + rebar
+          const frameTop = 0;
+          const frameH = brickTop - frameTop;
+          // Left column
+          g.rect(0, frameTop, 3, frameH).fill(0xAAAAAA);
+          // Right column
+          g.rect(w - 3, frameTop, 3, frameH).fill(0xAAAAAA);
+          // Middle column
+          g.rect(Math.floor(w / 2) - 1, frameTop, 3, frameH).fill(0xAAAAAA);
+          // Horizontal beam at top
+          g.rect(0, frameTop, w, 3).fill(0xAAAAAA);
+          // Horizontal beam mid-frame
+          g.rect(0, frameTop + Math.floor(frameH / 2), w, 2).fill(0xAAAAAA);
+          // Rebar sticking up from top — exposed reinforcement
+          g.rect(4, frameTop - 4, 1, 6).fill(rebar);
+          g.rect(10, frameTop - 6, 1, 8).fill(rebar);
+          g.rect(w - 6, frameTop - 5, 1, 7).fill(rebar);
+          g.rect(w - 12, frameTop - 3, 1, 5).fill(rebar);
+          g.rect(Math.floor(w / 2) + 2, frameTop - 5, 1, 7).fill(rebar);
+          // Partial brick fill on one side of upper section (work in progress)
+          const partialTop = frameTop + Math.floor(frameH / 2) + 2;
+          const partialH = frameH - Math.floor(frameH / 2) - 2;
+          for (let row = 0; row < Math.floor(partialH / bh); row++) {
+            const by = partialTop + row * bh;
+            const offset = row % 2 === 0 ? 0 : Math.floor(bw / 2);
+            // Only fill the left third — looks like bricklaying in progress
+            const fillW = Math.floor(w * 0.4);
+            for (let bx = 3 + offset; bx < fillW; bx += bw + 1) {
+              const clampedW = Math.min(bw, fillW - bx);
+              if (clampedW > 1) {
+                g.rect(bx, by, clampedW, bh - 1).fill(brickDark);
+              }
+            }
+          }
+          // Yellow Shepherd accent — construction tape at top
+          g.rect(0, brickTop - 1, w, 1).fill(dec.color);
+        } else if (dec.type === 'hard-hat-flag') {
+          // Pole
+          g.rect(0, 0, 2, dec.height).fill(0x888888);
+          // Flag cloth
+          g.rect(2, 2, dec.width - 2, 8).fill(dec.color);
+          // Hard hat silhouette on flag — tiny darker detail
+          const fx = 3;
+          const fy = 4;
+          g.roundRect(fx, fy, 3, 2, 1).fill(0xD4A840);
+          g.rect(fx, fy + 1, 3, 1).fill(0xD4A840);
+        } else if (dec.type === 'yt-screen') {
+          this.drawYtScreenFrame(g);
+          // Initial screen — first cat video frame
+          g.rect(2, 2, 20, 11).fill(0x6699BB);
+          this.drawCatVideo(g, 0, 0);
+          g.rect(2, 12, 20, 1).fill(0x444444);
+          this.ytScreen = g;
+        } else if (dec.type === 'play-button-trophy') {
+          const w = dec.width;
+          const h = dec.height;
+          // Dark pedestal
+          g.rect(Math.floor(w / 2) - 4, h - 4, 8, 4).fill(0x555555);
+          // Silver plaque
+          g.roundRect(0, 2, w, h - 6, 2).fill(0xC0C0C0);
+          // Inner frame border
+          g.rect(1, 3, w - 2, h - 8).fill(0x999999);
+          // Inner fill
+          g.rect(2, 4, w - 4, h - 10).fill(0xC0C0C0);
+          // Play button triangle engraved in center
+          const cx = Math.floor(w / 2);
+          const cy = Math.floor((h - 4) / 2) + 2;
+          g.moveTo(cx - 3, cy - 4)
+            .lineTo(cx + 4, cy)
+            .lineTo(cx - 3, cy + 4)
+            .closePath()
+            .fill(0xDDDDDD);
+          // Shimmer highlight — will be animated
+          const shimmer = new Graphics();
+          shimmer.rect(0, 4, 2, h - 10).fill({ color: 0xFFFFFF, alpha: 0.4 });
+          shimmer.x = 2;
+          g.addChild(shimmer);
+          this.trophyShimmer = shimmer;
+        } else if (dec.type === 'camera-ring-light') {
+          const w = dec.width;
+          const h = dec.height;
+          // Ring light (back layer) — circle of warm white dots
+          const ringCx = Math.floor(w / 2);
+          const ringCy = 6;
+          const ringR = 5;
+          for (let a = 0; a < 12; a++) {
+            const angle = (a / 12) * Math.PI * 2;
+            const rx = ringCx + Math.round(Math.cos(angle) * ringR);
+            const ry = ringCy + Math.round(Math.sin(angle) * ringR);
+            g.rect(rx, ry, 2, 2).fill(0xFFFFDD);
+          }
+          // Tripod — three legs converging at a point
+          const tripodTop = 14;
+          const tripodBottom = h;
+          // Left leg
+          g.moveTo(ringCx, tripodTop).lineTo(2, tripodBottom).lineTo(4, tripodBottom).lineTo(ringCx, tripodTop + 2).closePath().fill(0x555555);
+          // Right leg
+          g.moveTo(ringCx, tripodTop).lineTo(w - 4, tripodBottom).lineTo(w - 2, tripodBottom).lineTo(ringCx, tripodTop + 2).closePath().fill(0x555555);
+          // Center leg
+          g.moveTo(ringCx - 1, tripodTop).lineTo(ringCx - 1, tripodBottom).lineTo(ringCx + 1, tripodBottom).lineTo(ringCx + 1, tripodTop).closePath().fill(0x555555);
+          // Camera body on tripod top
+          g.rect(ringCx - 4, tripodTop - 4, 8, 5).fill(0x333333);
+          // Lens
+          g.circle(ringCx + 3, tripodTop - 2, 2).fill(0x111111);
+          g.circle(ringCx + 3, tripodTop - 2, 1).fill(0x333355);
+          // Red recording dot — will be animated
+          const redDot = new Graphics();
+          redDot.circle(ringCx - 3, tripodTop - 3, 1).fill(0xFF0000);
+          g.addChild(redDot);
+          this.cameraLight = redDot;
         }
 
         g.x = dec.worldX;
         g.y = decY;
         this.decorationLayer.addChild(g);
+      }
+    }
+  }
+
+  private drawYtScreenFrame(g: Graphics): void {
+    // Monitor bezel
+    g.rect(0, 0, 24, 16).fill(0x222222);
+    // Logo accent strip
+    g.rect(8, 14, 8, 1).fill(0x555555);
+    // Stand neck
+    g.rect(10, 16, 4, 4).fill(0x444444);
+    // Stand base
+    g.rect(7, 20, 10, 2).fill(0x444444);
+  }
+
+  private drawCatVideo(g: Graphics, videoIndex: number, t: number): void {
+    // All drawing is within the 20x11 screen area at offset (2, 2)
+    const sx = 2;
+    const sy = 2;
+    const cat = 0xEEAA44; // orange tabby
+    const dark = 0xBB7722; // darker stripes
+    const white = 0xFFFFFF;
+    const pink = 0xFFAAAA;
+
+    if (videoIndex === 0) {
+      // Scene: Cat knocks mug off table
+      g.rect(sx, sy, 20, 11).fill(0x99BBDD); // light blue room bg
+      // Table surface
+      g.rect(sx, sy + 8, 20, 3).fill(0x8B6914);
+      // Cat body sitting on table (right side)
+      const frame = Math.floor(t * 2) % 4;
+      // Cat body
+      g.rect(sx + 12, sy + 4, 5, 4).fill(cat);
+      // Cat head
+      g.rect(sx + 13, sy + 2, 3, 3).fill(cat);
+      // Ears
+      g.rect(sx + 13, sy + 1, 1, 1).fill(cat);
+      g.rect(sx + 15, sy + 1, 1, 1).fill(cat);
+      // Eyes
+      g.rect(sx + 13, sy + 3, 1, 1).fill(0x222222);
+      g.rect(sx + 15, sy + 3, 1, 1).fill(0x222222);
+      // Tail
+      g.rect(sx + 16, sy + 4, 2, 1).fill(dark);
+      g.rect(sx + 17, sy + 3, 1, 1).fill(dark);
+      // Mug — cat paw pushes it further each frame
+      const mugX = sx + 4 - frame * 2;
+      if (frame < 3) {
+        // Mug on table
+        g.rect(Math.max(sx, mugX), sy + 5, 3, 3).fill(0xDD4444);
+        // Cat paw extended toward mug
+        g.rect(sx + 12, sy + 6, 1, 1).fill(cat);
+      } else {
+        // Mug falling off! — below table
+        g.rect(sx + 1, sy + 9, 3, 2).fill(0xDD4444);
+        // Paw hanging over edge
+        g.rect(sx + 11, sy + 6, 2, 1).fill(cat);
+      }
+    } else if (videoIndex === 1) {
+      // Scene: Cat chases laser dot
+      g.rect(sx, sy, 20, 11).fill(0xCCBBAA); // beige floor bg
+      // Red laser dot bouncing around
+      const dotX = sx + 3 + Math.floor((Math.sin(t * 3) * 0.5 + 0.5) * 14);
+      const dotY = sy + 4 + Math.floor((Math.cos(t * 2.3) * 0.5 + 0.5) * 5);
+      g.circle(dotX, dotY, 1).fill(0xFF0000);
+      // Cat chasing — position trails behind dot
+      const catX = sx + 3 + Math.floor((Math.sin((t - 0.4) * 3) * 0.5 + 0.5) * 14) - 3;
+      const catY = sy + 5;
+      // Cat body (low crouch)
+      g.rect(catX, catY, 5, 3).fill(cat);
+      // Head
+      g.rect(catX + 4, catY - 1, 3, 2).fill(cat);
+      // Ears
+      g.rect(catX + 5, catY - 2, 1, 1).fill(cat);
+      g.rect(catX + 6, catY - 2, 1, 1).fill(cat);
+      // Eyes (wide, focused)
+      g.rect(catX + 5, catY - 1, 1, 1).fill(0x222222);
+      g.rect(catX + 6, catY - 1, 1, 1).fill(0x222222);
+      // Tail up with excitement
+      g.rect(catX - 1, catY - 1, 1, 2).fill(dark);
+      g.rect(catX - 2, catY - 2, 1, 1).fill(dark);
+    } else {
+      // Scene: Cat in a box — pops in and out
+      g.rect(sx, sy, 20, 11).fill(0xAABBCC); // soft blue bg
+      // Cardboard box
+      g.rect(sx + 6, sy + 4, 9, 7).fill(0xC4956A);
+      g.rect(sx + 6, sy + 4, 9, 1).fill(0xA07850); // top edge
+      // Box flaps
+      g.rect(sx + 5, sy + 3, 3, 2).fill(0xC4956A);
+      g.rect(sx + 13, sy + 3, 3, 2).fill(0xC4956A);
+      // Cat peeking out — bobs up and down
+      const bobFrame = Math.floor(t * 1.5) % 3;
+      if (bobFrame === 0) {
+        // Just ears visible
+        g.rect(sx + 9, sy + 2, 1, 2).fill(cat);
+        g.rect(sx + 12, sy + 2, 1, 2).fill(cat);
+        // Inner ear
+        g.rect(sx + 9, sy + 3, 1, 1).fill(pink);
+        g.rect(sx + 12, sy + 3, 1, 1).fill(pink);
+      } else if (bobFrame === 1) {
+        // Head poking out
+        g.rect(sx + 8, sy + 1, 5, 3).fill(cat);
+        // Ears
+        g.rect(sx + 8, sy, 1, 1).fill(cat);
+        g.rect(sx + 12, sy, 1, 1).fill(cat);
+        // Eyes (curious)
+        g.rect(sx + 9, sy + 2, 1, 1).fill(0x222222);
+        g.rect(sx + 11, sy + 2, 1, 1).fill(0x222222);
+        // Nose
+        g.rect(sx + 10, sy + 3, 1, 1).fill(pink);
+      } else {
+        // Full pop — head plus paws on box rim
+        g.rect(sx + 8, sy, 5, 4).fill(cat);
+        // Ears
+        g.rect(sx + 8, sy - 1, 1, 1).fill(cat);
+        g.rect(sx + 12, sy - 1, 1, 1).fill(cat);
+        // Eyes (big surprise)
+        g.rect(sx + 9, sy + 1, 1, 1).fill(white);
+        g.rect(sx + 11, sy + 1, 1, 1).fill(white);
+        g.rect(sx + 9, sy + 1, 1, 1).fill(0x222222);
+        g.rect(sx + 11, sy + 1, 1, 1).fill(0x222222);
+        // Nose
+        g.rect(sx + 10, sy + 2, 1, 1).fill(pink);
+        // Paws on rim
+        g.rect(sx + 7, sy + 4, 2, 1).fill(cat);
+        g.rect(sx + 13, sy + 4, 2, 1).fill(cat);
       }
     }
   }

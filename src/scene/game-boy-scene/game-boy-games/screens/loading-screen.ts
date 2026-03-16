@@ -33,7 +33,7 @@ export default class LoadingScreen extends ScreenAbstract {
     this.logo.y = -15;
 
     this.movingTween = new TWEEN.Tween(this.logo)
-      .to({ y: GAME_BOY_CONFIG.screen.height * 0.5 }, 2500)
+      .to({ y: GAME_BOY_CONFIG.screen.height * 0.5 }, 1500)
       .easing(TWEEN.Easing.Linear.None)
       .start()
       .onComplete((): void => {

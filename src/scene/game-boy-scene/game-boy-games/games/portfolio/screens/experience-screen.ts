@@ -81,7 +81,7 @@ export default class ExperienceScreen extends GameScreenAbstract {
       return;
     }
 
-    if (this.isAtEnd || this.isAtExit) {
+    if (this.isAtExit) {
       return;
     }
 
@@ -103,6 +103,11 @@ export default class ExperienceScreen extends GameScreenAbstract {
       this.showEnding();
     }
 
+    // If player walks back from the end, dismiss ending
+    if (this.isAtEnd && this.player.worldX < PORTFOLIO_CONFIG.world.endZoneX) {
+      this.hideEnding();
+    }
+
     // Check if player walked back to the start
     if (this.player.worldX <= 2) {
       this.showExit();
@@ -118,11 +123,18 @@ export default class ExperienceScreen extends GameScreenAbstract {
       return;
     }
 
-    // At the ending — Start or B returns to title
+    // At the ending — Start or B returns to title, but allow walking back
     if (this.isAtEnd) {
       if (buttonType === BUTTON_TYPE.Start || buttonType === BUTTON_TYPE.B) {
         this.events.emit('onReturnToTitle');
+        return;
       }
+
+      if (buttonType === BUTTON_TYPE.CrossLeft) {
+        this.player.setMovementState(PLAYER_STATE.WalkLeft);
+        return;
+      }
+
       return;
     }
 
@@ -328,6 +340,12 @@ export default class ExperienceScreen extends GameScreenAbstract {
     this.player.setMovementState(PLAYER_STATE.Idle);
     this.endingText.visible = true;
     this.blinkEndingText();
+  }
+
+  private hideEnding(): void {
+    this.isAtEnd = false;
+    this.stopTweens();
+    this.endingText.visible = false;
   }
 
   private blinkEndingText(): void {

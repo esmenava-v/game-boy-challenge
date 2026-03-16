@@ -114,48 +114,125 @@ export default class PlayerCharacter extends Container {
   private drawIdle(): void {
     const g = this.bodyGfx;
     g.clear();
-    // Hair
-    g.rect(2, 0, 6, 2).fill(0x4A2700);
-    // Head
-    g.rect(2, 2, 6, 3).fill(0xF5CBA7);
-    // Body
-    g.rect(1, 5, 8, 5).fill(0x2980B9);
+    // Hair — top
+    g.rect(2, 0, 6, 2).fill(0x1A1A1A);
+    g.rect(3, -1, 4, 1).fill(0x1A1A1A);
+    // Bangs at front
+    g.rect(7, 2, 1, 1).fill(0x1A1A1A);
+    // Ponytail — extends from back of head, down
+    g.rect(1, 1, 2, 2).fill(0x1A1A1A);
+    g.rect(0, 3, 2, 1).fill(0x1A1A1A);
+    g.rect(-1, 4, 2, 2).fill(0x1A1A1A);
+    g.rect(-1, 6, 2, 1).fill(0x2D2D2D);
+    // Hair tie
+    g.rect(1, 2, 1, 1).fill(0xFF4466);
+    // Head — light brown skin
+    g.rect(2, 2, 6, 3).fill(0xC68642);
+    // Jumpsuit body
+    g.rect(1, 5, 8, 5).fill(0x1C1C1C);
+    // V-neck
+    g.rect(4, 5, 2, 1).fill(0xC68642);
+    // Belt detail
+    g.rect(1, 9, 8, 1).fill(0x333333);
     // Legs
-    g.rect(2, 10, 3, 4).fill(0x2C3E50);
-    g.rect(5, 10, 3, 4).fill(0x2C3E50);
+    g.rect(2, 10, 3, 3).fill(0x1C1C1C);
+    g.rect(5, 10, 3, 3).fill(0x1C1C1C);
+    // Shoes
+    g.rect(2, 13, 3, 1).fill(0x111111);
+    g.rect(5, 13, 3, 1).fill(0x111111);
   }
 
   private drawWalk1(): void {
     const g = this.bodyGfx;
     g.clear();
-    g.rect(2, 0, 6, 2).fill(0x4A2700);
-    g.rect(2, 2, 6, 3).fill(0xF5CBA7);
-    g.rect(1, 5, 8, 5).fill(0x2980B9);
+    // Hair — top
+    g.rect(2, 0, 6, 2).fill(0x1A1A1A);
+    g.rect(3, -1, 4, 1).fill(0x1A1A1A);
+    // Bangs at front
+    g.rect(7, 2, 1, 1).fill(0x1A1A1A);
+    // Ponytail — bounces slightly back while walking
+    g.rect(1, 1, 2, 2).fill(0x1A1A1A);
+    g.rect(-1, 3, 2, 1).fill(0x1A1A1A);
+    g.rect(-2, 4, 2, 2).fill(0x1A1A1A);
+    g.rect(-2, 6, 2, 1).fill(0x2D2D2D);
+    // Hair tie
+    g.rect(1, 2, 1, 1).fill(0xFF4466);
+    // Head — light brown skin
+    g.rect(2, 2, 6, 3).fill(0xC68642);
+    // Jumpsuit body
+    g.rect(1, 5, 8, 5).fill(0x1C1C1C);
+    // V-neck
+    g.rect(4, 5, 2, 1).fill(0xC68642);
+    // Belt detail
+    g.rect(1, 9, 8, 1).fill(0x333333);
     // Legs spread
-    g.rect(1, 10, 3, 4).fill(0x2C3E50);
-    g.rect(6, 10, 3, 4).fill(0x2C3E50);
+    g.rect(1, 10, 3, 3).fill(0x1C1C1C);
+    g.rect(6, 10, 3, 3).fill(0x1C1C1C);
+    // Shoes
+    g.rect(1, 13, 3, 1).fill(0x111111);
+    g.rect(6, 13, 3, 1).fill(0x111111);
   }
 
   private drawWalk2(): void {
     const g = this.bodyGfx;
     g.clear();
-    g.rect(2, 0, 6, 2).fill(0x4A2700);
-    g.rect(2, 2, 6, 3).fill(0xF5CBA7);
-    g.rect(1, 5, 8, 5).fill(0x2980B9);
+    // Hair — top
+    g.rect(2, 0, 6, 2).fill(0x1A1A1A);
+    g.rect(3, -1, 4, 1).fill(0x1A1A1A);
+    // Bangs at front
+    g.rect(7, 2, 1, 1).fill(0x1A1A1A);
+    // Ponytail — swings forward on this frame
+    g.rect(1, 1, 2, 2).fill(0x1A1A1A);
+    g.rect(0, 3, 2, 1).fill(0x1A1A1A);
+    g.rect(0, 4, 2, 2).fill(0x1A1A1A);
+    g.rect(0, 6, 2, 1).fill(0x2D2D2D);
+    // Hair tie
+    g.rect(1, 2, 1, 1).fill(0xFF4466);
+    // Head — light brown skin
+    g.rect(2, 2, 6, 3).fill(0xC68642);
+    // Jumpsuit body
+    g.rect(1, 5, 8, 5).fill(0x1C1C1C);
+    // V-neck
+    g.rect(4, 5, 2, 1).fill(0xC68642);
+    // Belt detail
+    g.rect(1, 9, 8, 1).fill(0x333333);
     // Legs together
-    g.rect(3, 10, 3, 4).fill(0x2C3E50);
-    g.rect(4, 10, 3, 4).fill(0x2C3E50);
+    g.rect(3, 10, 3, 3).fill(0x1C1C1C);
+    g.rect(4, 10, 3, 3).fill(0x1C1C1C);
+    // Shoes
+    g.rect(3, 13, 3, 1).fill(0x111111);
+    g.rect(4, 13, 3, 1).fill(0x111111);
   }
 
   private drawJump(): void {
     const g = this.bodyGfx;
     g.clear();
-    g.rect(2, 0, 6, 2).fill(0x4A2700);
-    g.rect(2, 2, 6, 3).fill(0xF5CBA7);
-    g.rect(1, 5, 8, 5).fill(0x2980B9);
+    // Hair — top
+    g.rect(2, 0, 6, 2).fill(0x1A1A1A);
+    g.rect(3, -1, 4, 1).fill(0x1A1A1A);
+    // Bangs at front
+    g.rect(7, 2, 1, 1).fill(0x1A1A1A);
+    // Ponytail — flips up during jump
+    g.rect(1, 1, 2, 2).fill(0x1A1A1A);
+    g.rect(-1, 1, 2, 1).fill(0x1A1A1A);
+    g.rect(-2, 2, 2, 2).fill(0x1A1A1A);
+    g.rect(-3, 2, 1, 1).fill(0x2D2D2D);
+    // Hair tie
+    g.rect(1, 2, 1, 1).fill(0xFF4466);
+    // Head — light brown skin
+    g.rect(2, 2, 6, 3).fill(0xC68642);
+    // Jumpsuit body
+    g.rect(1, 5, 8, 5).fill(0x1C1C1C);
+    // V-neck
+    g.rect(4, 5, 2, 1).fill(0xC68642);
+    // Belt detail
+    g.rect(1, 9, 8, 1).fill(0x333333);
     // Legs tucked
-    g.rect(2, 10, 3, 3).fill(0x2C3E50);
-    g.rect(5, 10, 3, 3).fill(0x2C3E50);
+    g.rect(2, 10, 3, 2).fill(0x1C1C1C);
+    g.rect(5, 10, 3, 2).fill(0x1C1C1C);
+    // Shoes
+    g.rect(2, 12, 3, 1).fill(0x111111);
+    g.rect(5, 12, 3, 1).fill(0x111111);
   }
 
   private updatePosition(): void {

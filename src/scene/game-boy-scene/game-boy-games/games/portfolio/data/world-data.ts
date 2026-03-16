@@ -7,7 +7,7 @@ export interface SignData {
 }
 
 export interface DecorationData {
-  type: 'building' | 'tree' | 'lamp' | 'flag' | 'arch-building' | 'tower' | 'palm-tree' | 'church';
+  type: 'building' | 'tree' | 'lamp' | 'flag' | 'arch-building' | 'tower' | 'palm-tree' | 'church' | 'yt-headquarters' | 'google-bike' | 'android-statue' | 'food-cart' | 'bench' | 'lab-building' | 'microscope' | 'dna-helix' | 'yc-logo' | 'molecule-logo' | 'planter-box' | 'crane' | 'safety-cone' | 'scaffold' | 'material-pile' | 'mini-excavator' | 'barrier' | 'hard-hat-flag' | 'building-wip' | 'yt-screen' | 'play-button-trophy' | 'camera-ring-light';
   worldX: number;
   width: number;
   height: number;
@@ -62,8 +62,8 @@ const ZONES: ZoneData[] = [
     label: 'YOUTUBE',
     startX: 280,
     endX: 560,
-    groundColor: 0x696969,
-    groundTopColor: 0x505050,
+    groundColor: 0x808080,
+    groundTopColor: 0x6E6E6E,
     sign: {
       title: 'YOUTUBE',
       role: 'Senior Software Engineer',
@@ -72,9 +72,13 @@ const ZONES: ZoneData[] = [
       worldX: 460,
     },
     decorations: [
-      { type: 'building', worldX: 340, width: 44, height: 44, color: 0xFF4444 },
-      { type: 'lamp', worldX: 410, width: 4, height: 20, color: 0xCCCCCC },
-      { type: 'tree', worldX: 520, width: 10, height: 20, color: 0x228B22 },
+      { type: 'google-bike', worldX: 295, width: 16, height: 11, color: 0x4285F4 },
+      { type: 'google-bike', worldX: 313, width: 16, height: 11, color: 0x34A853 },
+      { type: 'yt-headquarters', worldX: 340, width: 60, height: 40, color: 0xE8E8E8 },
+      { type: 'bench', worldX: 405, width: 12, height: 8, color: 0x8B6914 },
+      { type: 'yt-screen', worldX: 420, width: 24, height: 22, color: 0x222222 },
+      { type: 'play-button-trophy', worldX: 485, width: 14, height: 20, color: 0xC0C0C0 },
+      { type: 'camera-ring-light', worldX: 515, width: 18, height: 24, color: 0x444444 },
     ],
   },
   {
@@ -82,8 +86,8 @@ const ZONES: ZoneData[] = [
     label: 'MANTEBIO',
     startX: 560,
     endX: 840,
-    groundColor: 0x8FBC8F,
-    groundTopColor: 0x6B8E6B,
+    groundColor: 0x2E3640,
+    groundTopColor: 0x242C32,
     sign: {
       title: 'MANTEBIO',
       role: 'Co-Founder & CTO',
@@ -92,9 +96,10 @@ const ZONES: ZoneData[] = [
       worldX: 740,
     },
     decorations: [
-      { type: 'building', worldX: 620, width: 36, height: 36, color: 0x2E8B57 },
-      { type: 'tree', worldX: 680, width: 12, height: 24, color: 0x006400 },
-      { type: 'lamp', worldX: 800, width: 4, height: 20, color: 0xAAAAAA },
+      { type: 'molecule-logo', worldX: 572, width: 22, height: 24, color: 0xA2ABFB },
+      { type: 'lab-building',  worldX: 620, width: 50, height: 40, color: 0xA2ABFB },
+      { type: 'dna-helix',     worldX: 690, width: 12, height: 36, color: 0xA2ABFB },
+      { type: 'yc-logo',     worldX: 790, width: 14, height: 18, color: 0xFF6600 },
     ],
   },
   {
@@ -102,19 +107,24 @@ const ZONES: ZoneData[] = [
     label: 'SHEPHERD',
     startX: 840,
     endX: 1120,
-    groundColor: 0xC0C0C0,
-    groundTopColor: 0x909090,
+    groundColor: 0xC2A66B,
+    groundTopColor: 0xA68B4B,
     sign: {
       title: 'SHEPHERD',
-      role: 'Co-Founder & CEO',
+      role: 'Design Engineer',
       dates: '2024 - Present',
-      description: 'Building AI-powered\ntools for the future.',
+      description: 'AI-powered insurance\nfor construction.',
       worldX: 1020,
     },
     decorations: [
-      { type: 'building', worldX: 900, width: 44, height: 42, color: 0x7B68EE },
-      { type: 'tree', worldX: 970, width: 10, height: 20, color: 0x228B22 },
-      { type: 'flag', worldX: 1090, width: 6, height: 28, color: 0x6A0DAD },
+      { type: 'barrier',        worldX: 855,  width: 14, height: 10, color: 0xF2C94C },
+      { type: 'safety-cone',    worldX: 878,  width: 6,  height: 10, color: 0xFF6B35 },
+      { type: 'material-pile',  worldX: 896,  width: 16, height: 12, color: 0xF2C94C },
+      { type: 'crane',          worldX: 920,  width: 24, height: 56, color: 0xF2C94C },
+      { type: 'building-wip',   worldX: 948,  width: 36, height: 40, color: 0xF2C94C },
+      { type: 'scaffold',       worldX: 990,  width: 20, height: 32, color: 0x888888 },
+      { type: 'mini-excavator', worldX: 1050, width: 20, height: 14, color: 0xF2C94C },
+      { type: 'hard-hat-flag',  worldX: 1100, width: 6,  height: 28, color: 0xF2C94C },
     ],
   },
 ];

@@ -31,6 +31,11 @@ export default class ExperienceScreen extends GameScreenAbstract {
   private blinkTimer: TimeoutInstance;
   private blinkTime: number;
 
+  private walkHint: Container;
+  private walkHintShown: boolean;
+  private walkHintBlinkTimer: TimeoutInstance;
+
+
   constructor() {
     super();
 
@@ -53,6 +58,10 @@ export default class ExperienceScreen extends GameScreenAbstract {
     this.blinkTimer = null;
     this.blinkTime = 700;
 
+    this.walkHint = null;
+    this.walkHintShown = false;
+    this.walkHintBlinkTimer = null;
+
     this.init();
   }
 
@@ -67,6 +76,11 @@ export default class ExperienceScreen extends GameScreenAbstract {
 
     if (this.exitText) {
       this.exitText.visible = false;
+    }
+
+    if (!this.walkHintShown && this.walkHint) {
+      this.walkHint.visible = true;
+      this.blinkWalkHint();
     }
   }
 
@@ -97,6 +111,11 @@ export default class ExperienceScreen extends GameScreenAbstract {
     );
 
     this.worldBuilder.update(dt, this.player.worldX);
+
+    // Walk hint: dismiss once player moves
+    if (!this.walkHintShown && Math.abs(this.player.worldX - 30) > 1) {
+      this.dismissWalkHint();
+    }
 
     // Check if player reached the end
     if (this.player.worldX >= PORTFOLIO_CONFIG.world.endZoneX) {
@@ -150,10 +169,12 @@ export default class ExperienceScreen extends GameScreenAbstract {
 
     if (buttonType === BUTTON_TYPE.CrossLeft) {
       this.player.setMovementState(PLAYER_STATE.WalkLeft);
+      this.dismissWalkHint();
     }
 
     if (buttonType === BUTTON_TYPE.CrossRight) {
       this.player.setMovementState(PLAYER_STATE.WalkRight);
+      this.dismissWalkHint();
     }
 
     if (buttonType === BUTTON_TYPE.A || buttonType === BUTTON_TYPE.CrossUp) {
@@ -164,6 +185,7 @@ export default class ExperienceScreen extends GameScreenAbstract {
         if (nearbySign) {
           this.signPopup.show(nearbySign.data);
           this.player.setMovementState(PLAYER_STATE.Idle);
+
           return;
         }
       }
@@ -186,6 +208,11 @@ export default class ExperienceScreen extends GameScreenAbstract {
     if (this.blinkTimer) {
       this.blinkTimer.stop();
     }
+
+    if (this.walkHintBlinkTimer) {
+      this.walkHintBlinkTimer.stop();
+    }
+
   }
 
   public reset(): void {
@@ -203,6 +230,12 @@ export default class ExperienceScreen extends GameScreenAbstract {
     if (this.exitText) {
       this.exitText.visible = false;
     }
+
+    this.walkHintShown = false;
+    if (this.walkHint) {
+      this.walkHint.visible = false;
+    }
+
   }
 
   private init(): void {
@@ -215,6 +248,7 @@ export default class ExperienceScreen extends GameScreenAbstract {
     this.initSignPopup();
     this.initEndingText();
     this.initExitText();
+    this.initWalkHint();
 
     this.visible = false;
   }
@@ -352,6 +386,40 @@ export default class ExperienceScreen extends GameScreenAbstract {
     this.blinkTimer = Timeout.call(this.blinkTime, () => {
       this.endingText.visible = !this.endingText.visible;
       this.blinkEndingText();
+    });
+  }
+
+  private initWalkHint(): void {
+    this.walkHint = new Container();
+    this.walkHint.visible = false;
+    this.addChild(this.walkHint);
+
+    const text = new Text({
+      text: '>>> WALK',
+      style: {
+        fontFamily: 'dogicapixel',
+        fontSize: 8,
+        fill: 0x999999,
+      },
+    });
+
+    text.anchor.set(1, 0);
+    text.x = PORTFOLIO_CONFIG.screen.width - 4;
+    text.y = 18;
+    this.walkHint.addChild(text);
+  }
+
+  private dismissWalkHint(): void {
+    if (this.walkHintShown) return;
+    this.walkHintShown = true;
+    if (this.walkHint) this.walkHint.visible = false;
+    if (this.walkHintBlinkTimer) this.walkHintBlinkTimer.stop();
+  }
+
+  private blinkWalkHint(): void {
+    this.walkHintBlinkTimer = Timeout.call(this.blinkTime, () => {
+      this.walkHint.visible = !this.walkHint.visible;
+      this.blinkWalkHint();
     });
   }
 

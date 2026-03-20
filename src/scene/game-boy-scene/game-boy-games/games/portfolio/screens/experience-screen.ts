@@ -96,7 +96,7 @@ export default class ExperienceScreen extends GameScreenAbstract {
       this.camera.getVisibleRight()
     );
 
-    this.worldBuilder.update(dt);
+    this.worldBuilder.update(dt, this.player.worldX);
 
     // Check if player reached the end
     if (this.player.worldX >= PORTFOLIO_CONFIG.world.endZoneX) {
@@ -358,7 +358,7 @@ export default class ExperienceScreen extends GameScreenAbstract {
   private getNearbySign(): SignSprite | null {
     const signs = this.worldBuilder.getSignSprites();
     const playerX = this.player.worldX;
-    const signRange = 16;
+    const signRange = 25;
 
     for (const sign of signs) {
       if (Math.abs(playerX - sign.worldX) <= signRange) {

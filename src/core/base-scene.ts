@@ -35,13 +35,10 @@ export default class BaseScene {
   private windowSizes: { width: number, height: number };
   private isAssetsLoaded: boolean;
 
-  private isKeyboardShortcutsShown: boolean;
-
   constructor() {
     this.isAssetsLoaded = false;
 
     SCENE_CONFIG.isMobile = isMobile(window.navigator).any;
-    this.isKeyboardShortcutsShown = false;
 
     this.init();
   }
@@ -324,42 +321,58 @@ export default class BaseScene {
   }
 
   private keyboardControls(): void {
+    const legend: Element = document.querySelector('.controls-legend');
+
     if (SCENE_CONFIG.isMobile) {
-      const keyboardIcon: Element = document.querySelector('.keyboard-icon');
-      keyboardIcon.classList.add('hide');
-    } else {
-      const keyboardIcon: Element = document.querySelector('.keyboard-icon');
-      const keyboardShortcuts: Element = document.querySelector('.keyboard-shortcuts');
-      keyboardShortcuts.classList.add('fastShow');
-
-      keyboardIcon.addEventListener('click', () => {
-        this.isKeyboardShortcutsShown = !this.isKeyboardShortcutsShown;
-
-        if (this.isKeyboardShortcutsShown) {
-          keyboardShortcuts.classList.remove('hide');
-          keyboardShortcuts.classList.add('show');
-        } else {
-          keyboardShortcuts.classList.remove('show');
-          keyboardShortcuts.classList.add('hide');
-        }
-      });
-      const list: HTMLUListElement = document.createElement('ul');
-      keyboardShortcuts.appendChild(list);
-
-      const items: string[] = [
-        'Arrows, WASD — D-pad',
-        'Z, Space — A button',
-        'X — B button',
-        'Enter — START',
-        'Scroll — Zoom',
-      ];
-
-      items.forEach(item => {
-        const listItem: HTMLLIElement = document.createElement('li');
-        listItem.innerHTML = `${item}`;
-        list.appendChild(listItem);
-      });
+      legend.classList.add('hide');
+      return;
     }
+
+    // Build always-visible controls legend
+    const groups: { keys: string[][]; label: string }[] = [
+      { keys: [['', '  W', ''], ['A', 'S', 'D']], label: 'move' },
+      { keys: [['X']], label: 'A' },
+      { keys: [['Z']], label: 'B' },
+      { keys: [['Enter']], label: 'start' },
+      { keys: [['Scroll']], label: 'zoom' },
+    ];
+
+    groups.forEach((group, gi) => {
+      if (gi > 0) {
+        const sep = document.createElement('div');
+        sep.className = 'ctrl-sep';
+        legend.appendChild(sep);
+      }
+
+      const groupEl = document.createElement('div');
+      groupEl.className = 'ctrl-group';
+
+      group.keys.forEach(row => {
+        const rowEl = document.createElement('div');
+        rowEl.className = 'ctrl-row';
+        row.forEach(key => {
+          if (key === '') {
+            const spacer = document.createElement('div');
+            spacer.style.width = '22px';
+            spacer.style.height = '22px';
+            rowEl.appendChild(spacer);
+          } else {
+            const keyEl = document.createElement('div');
+            keyEl.className = 'ctrl-key' + (key.length > 2 ? ' wide' : '');
+            keyEl.textContent = key.trim();
+            rowEl.appendChild(keyEl);
+          }
+        });
+        groupEl.appendChild(rowEl);
+      });
+
+      const label = document.createElement('div');
+      label.className = 'ctrl-label';
+      label.textContent = group.label;
+      groupEl.appendChild(label);
+
+      legend.appendChild(groupEl);
+    });
   }
 
   private initUpdate(): void {

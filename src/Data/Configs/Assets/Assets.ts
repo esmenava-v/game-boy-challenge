@@ -26,6 +26,10 @@ const PixiAssets: string[] = [
 
   'assets/other/nintendo-logo-screen.png',
   'assets/other/stop-sign.png',
+  'assets/other/stanford.png',
+  'assets/other/shepherd-logo.png',
+  'assets/other/mantle-logo.png',
+  'assets/other/youtube.png',
 
   'assets/spritesheets/tetris-sheet.json',
   'fonts/tetris.ttf',

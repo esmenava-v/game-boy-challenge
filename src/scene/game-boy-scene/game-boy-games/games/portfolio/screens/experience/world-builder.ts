@@ -1,12 +1,13 @@
-import { Container, Graphics } from 'pixi.js';
+import { Container, Graphics, Sprite, Texture } from 'pixi.js';
 import { PORTFOLIO_CONFIG } from '../../data/portfolio-config';
 import { ZONES, CLOUDS, ZoneData, SignData } from '../../data/world-data';
+import Loader from '../../../../../../../core/loader';
 
 interface SignSprite {
   container: Container;
   data: SignData;
   worldX: number;
-  indicator: Graphics;
+  indicator: Container;
 }
 
 export default class WorldBuilder {
@@ -18,8 +19,13 @@ export default class WorldBuilder {
   private pulseTimer: number = 0;
   private ytScreen: Graphics | null = null;
   private ytScreenTimer: number = 0;
-  private trophyShimmer: Graphics | null = null;
   private cameraLight: Graphics | null = null;
+  private cameraPreview: Graphics | null = null;
+  private cameraPreviewActive: boolean = false;
+  private cameraFlashTimer: number = 0;
+  private cameraFlash: Graphics | null = null;
+  private labTable: Graphics | null = null;
+  private genomeSequencer: Graphics | null = null;
 
   constructor(groundLayer: Container, decorationLayer: Container, backgroundLayer: Container) {
     this.groundLayer = groundLayer;
@@ -35,11 +41,15 @@ export default class WorldBuilder {
     return this.signSprites;
   }
 
-  public update(dt: number): void {
+  public update(dt: number, playerWorldX: number = -1): void {
     this.pulseTimer += dt * 5;
-    const alpha = 0.4 + 0.6 * (0.5 + 0.5 * Math.sin(this.pulseTimer));
+    const billboardRange = 25;
     for (const sign of this.signSprites) {
-      sign.indicator.alpha = alpha;
+      const near = playerWorldX >= 0 && Math.abs(playerWorldX - sign.worldX) <= billboardRange;
+      sign.indicator.visible = near;
+      if (near) {
+        sign.indicator.alpha = 0.6 + 0.4 * (0.5 + 0.5 * Math.sin(this.pulseTimer));
+      }
     }
 
     // Animate yt-screen — funny cat videos on loop
@@ -69,15 +79,157 @@ export default class WorldBuilder {
       }
     }
 
-    // Trophy shimmer animation
-    if (this.trophyShimmer) {
-      const shimmerX = 2 + Math.floor((Math.sin(this.pulseTimer * 0.3) * 0.5 + 0.5) * 10);
-      this.trophyShimmer.x = shimmerX;
+    // Camera recording dot blink — faster when player is in filming area
+    const inFilmingArea = playerWorldX >= 488 && playerWorldX <= 525;
+    if (this.cameraLight) {
+      const blinkSpeed = inFilmingArea ? 1.6 : 0.8;
+      this.cameraLight.alpha = 0.5 + 0.5 * Math.sin(this.pulseTimer * blinkSpeed);
     }
 
-    // Camera recording dot blink
-    if (this.cameraLight) {
-      this.cameraLight.alpha = 0.5 + 0.5 * Math.sin(this.pulseTimer * 0.8);
+    // Camera preview monitor
+    if (this.cameraPreview) {
+      const g = this.cameraPreview;
+      g.clear();
+      // Bezel
+      g.rect(0, 0, 22, 16).fill(0x333333);
+      // Stand arm
+      g.rect(9, 15, 4, 2).fill(0x444444);
+      g.rect(6, 16, 10, 2).fill(0x444444);
+
+      if (inFilmingArea) {
+        // Screen on — beach background (green screen effect)
+        // Sky
+        g.rect(2, 1, 18, 7).fill(0x54C4F0);
+        // Sun
+        g.rect(16, 2, 3, 3).fill(0xFFDD44);
+        g.rect(15, 3, 1, 1).fill(0xFFDD44);
+        g.rect(19, 3, 1, 1).fill(0xFFDD44);
+        // Cloud
+        g.rect(5, 2, 4, 1).fill(0xFFFFFF);
+        g.rect(6, 1, 2, 1).fill(0xFFFFFF);
+        // Ocean
+        g.rect(2, 8, 18, 2).fill(0x2288CC);
+        // Wave highlights
+        g.rect(4, 8, 2, 1).fill(0x44AAEE);
+        g.rect(10, 9, 3, 1).fill(0x44AAEE);
+        g.rect(16, 8, 2, 1).fill(0x44AAEE);
+        // Sand
+        g.rect(2, 10, 18, 4).fill(0xE8D68C);
+        // Wet sand near water
+        g.rect(2, 10, 18, 1).fill(0xC4B078);
+        // Palm tree
+        g.rect(4, 7, 1, 5).fill(0x8B6914);
+        g.rect(2, 5, 2, 2).fill(0x33AA33);
+        g.rect(4, 5, 2, 1).fill(0x33AA33);
+        g.rect(5, 6, 2, 1).fill(0x33AA33);
+        g.rect(3, 4, 1, 1).fill(0x33AA33);
+
+        // Map player worldX (488–525) → screen X (3–16)
+        const px = 3 + Math.round(((playerWorldX - 488) / 37) * 13);
+        // Mini player (~6px tall)
+        g.rect(px, 6, 2, 1).fill(0x1A1A1A);       // Hair
+        g.rect(px + 2, 6, 1, 1).fill(0xFF4466);    // Pink ponytail
+        g.rect(px, 7, 2, 1).fill(0xC68642);        // Head
+        g.rect(px, 8, 2, 3).fill(0x1C1C1C);        // Body/legs
+
+        // Blinking REC dot
+        const recAlpha = Math.sin(this.pulseTimer * 1.2) > 0 ? 1 : 0;
+        if (recAlpha > 0) {
+          g.rect(3, 2, 2, 2).fill(0xFF0000);
+        }
+
+        if (!this.cameraPreviewActive) {
+          this.cameraPreviewActive = true;
+          this.cameraFlashTimer = 3.5; // flash fires almost immediately on entry
+        }
+      } else {
+        // Screen off — dark
+        g.rect(2, 1, 18, 13).fill(0x222233);
+        this.cameraPreviewActive = false;
+      }
+    }
+
+    // Camera flash effect
+    if (inFilmingArea && this.cameraFlash) {
+      this.cameraFlashTimer += dt;
+      if (this.cameraFlashTimer >= 4.0) {
+        this.cameraFlashTimer = 0;
+      }
+      // Flash fires in the last 0.15s of each 4s cycle
+      const flashStart = 4.0 - 0.15;
+      if (this.cameraFlashTimer >= flashStart) {
+        const flashProgress = (this.cameraFlashTimer - flashStart) / 0.15;
+        // Ramp up then down: peak at 0.3 of the flash duration
+        this.cameraFlash.alpha = flashProgress < 0.3 ? (flashProgress / 0.3) * 0.8 : 0.8 * (1 - (flashProgress - 0.3) / 0.7);
+      } else {
+        this.cameraFlash.alpha = 0;
+      }
+    } else if (this.cameraFlash) {
+      this.cameraFlash.alpha = 0;
+    }
+
+    // Lab table — animated bubbling liquid in test tubes and flask
+    if (this.labTable) {
+      const lg = this.labTable;
+      const h = 22;
+      const t = this.pulseTimer;
+      // Redraw animated parts — flask liquid and test tube liquids
+      // Erlenmeyer flask liquid — bubbles rising
+      const flaskLiquidY = h - 15;
+      const bubble1Y = flaskLiquidY + 2 - (t * 0.6 % 4);
+      const bubble2Y = flaskLiquidY + 4 - ((t * 0.6 + 2) % 4);
+      lg.rect(14, h - 15, 6, 4).fill(0x2E3640); // clear flask area
+      lg.rect(14, h - 15, 6, 4).fill({ color: 0xBB66FF, alpha: 0.5 }); // purple liquid
+      if (bubble1Y > flaskLiquidY && bubble1Y < flaskLiquidY + 3) {
+        lg.circle(16, bubble1Y, 0.8).fill({ color: 0xFFFFFF, alpha: 0.7 });
+      }
+      if (bubble2Y > flaskLiquidY && bubble2Y < flaskLiquidY + 3) {
+        lg.circle(18, bubble2Y, 0.8).fill({ color: 0xFFFFFF, alpha: 0.7 });
+      }
+      // Test tube liquids — levels bob up and down
+      const bob1 = Math.floor(Math.sin(t * 0.8) * 2);
+      const bob2 = Math.floor(Math.sin(t * 0.8 + 2) * 2);
+      const bob3 = Math.floor(Math.sin(t * 0.8 + 4) * 2);
+      // Clear and redraw tube contents
+      lg.rect(25, h - 17, 2, 5).fill(0x2E3640);
+      lg.rect(29, h - 17, 2, 5).fill(0x2E3640);
+      lg.rect(33, h - 17, 2, 5).fill(0x2E3640);
+      lg.rect(25, h - 14 + bob1, 2, 4 - bob1).fill({ color: 0x66FF66, alpha: 0.6 });
+      lg.rect(29, h - 14 + bob2, 2, 4 - bob2).fill({ color: 0xFF6688, alpha: 0.6 });
+      lg.rect(33, h - 14 + bob3, 2, 4 - bob3).fill({ color: 0x66CCFF, alpha: 0.6 });
+    }
+
+    // Genome sequencer — scrolling colored base-pair bars
+    if (this.genomeSequencer) {
+      const sg = this.genomeSequencer;
+      const w = 18;
+      const h = 26;
+      const standH = 5;
+      const bezelY = 2;
+      const bezelH = h - standH - 2;
+      const screenX = 2;
+      const screenY = bezelY + 2;
+      const screenW = w - 4;
+      const screenH = bezelH - 4;
+      // Clear screen area
+      sg.rect(screenX, screenY, screenW, screenH).fill(0x112211);
+      // Base pair colors: A=green, T=red, G=yellow, C=blue
+      const baseColors = [0x44CC44, 0xCC4444, 0xCCCC44, 0x4488CC];
+      const barH = 2;
+      const scrollOffset = Math.floor(this.pulseTimer * 0.6) % barH;
+      const numBars = Math.ceil(screenH / barH) + 1;
+      for (let i = 0; i < numBars; i++) {
+        const barY = screenY + i * barH - scrollOffset;
+        if (barY + barH <= screenY || barY >= screenY + screenH) continue;
+        // Deterministic color per bar based on index + scroll
+        const colorIdx = (i + Math.floor(this.pulseTimer * 0.6 / barH)) % baseColors.length;
+        const barWidth = 3 + ((i * 7 + colorIdx * 3) % (screenW - 3));
+        const clippedY = Math.max(barY, screenY);
+        const clippedH = Math.min(barY + barH, screenY + screenH) - clippedY;
+        if (clippedH > 0) {
+          sg.rect(screenX, clippedY, barWidth, clippedH).fill(baseColors[colorIdx]);
+        }
+      }
     }
   }
 
@@ -96,7 +248,6 @@ export default class WorldBuilder {
     this.buildSkyline();
     this.buildGround();
     this.buildDecorations();
-    this.buildSigns();
     this.buildEndZone();
   }
 
@@ -445,16 +596,22 @@ export default class WorldBuilder {
           // Awning support poles
           g.rect(1, awningY, 1, cartY - awningY + 2).fill(0x8B6914);
           g.rect(w - 2, awningY, 1, cartY - awningY + 2).fill(0x8B6914);
-        } else if (dec.type === 'bench') {
+        } else if (dec.type === 'sofa') {
           const w = dec.width;
           const h = dec.height;
-          // Two legs
-          g.rect(1, Math.floor(h * 0.4), 2, Math.floor(h * 0.6)).fill(0x5C4A1E);
-          g.rect(w - 3, Math.floor(h * 0.4), 2, Math.floor(h * 0.6)).fill(0x5C4A1E);
-          // Seat plank
-          g.rect(0, Math.floor(h * 0.4), w, 2).fill(dec.color);
+          const fabric = dec.color;
+          const darkFabric = 0x6B5010;
+          // Short stubby legs
+          g.rect(1, h - 2, 2, 2).fill(0x5C4A1E);
+          g.rect(w - 3, h - 2, 2, 2).fill(0x5C4A1E);
+          // Seat cushion
+          g.roundRect(1, Math.floor(h * 0.5), w - 2, Math.floor(h * 0.35), 1).fill(fabric);
           // Backrest
-          g.rect(0, Math.floor(h * 0.1), w, 2).fill(dec.color);
+          g.roundRect(1, 1, w - 2, Math.floor(h * 0.5), 1).fill(darkFabric);
+          // Left armrest
+          g.roundRect(0, Math.floor(h * 0.25), 2, Math.floor(h * 0.55), 1).fill(darkFabric);
+          // Right armrest
+          g.roundRect(w - 2, Math.floor(h * 0.25), 2, Math.floor(h * 0.55), 1).fill(darkFabric);
         } else if (dec.type === 'church') {
           const w = dec.width;
           const h = dec.height;
@@ -563,6 +720,26 @@ export default class WorldBuilder {
           }
           // Dark pedestal at bottom
           g.rect(1, dec.height - 3, dec.width - 2, 3).fill(0x242C32);
+        } else if (dec.type === 'genome-sequencer') {
+          const w = dec.width;
+          const h = dec.height;
+          // Dark stand/pedestal at the bottom
+          const standH = 5;
+          const standW = 8;
+          const cx = Math.floor(w / 2);
+          g.rect(cx - Math.floor(standW / 2), h - standH, standW, standH).fill(0x242C32);
+          // Monitor bezel (dark gray)
+          const bezelY = 2;
+          const bezelH = h - standH - 2;
+          g.rect(0, bezelY, w, bezelH).fill(0x333344);
+          // Screen area inside bezel (slightly inset)
+          const screenX = 2;
+          const screenY = bezelY + 2;
+          const screenW = w - 4;
+          const screenH = bezelH - 4;
+          g.rect(screenX, screenY, screenW, screenH).fill(0x112211);
+          // Store reference for animation
+          this.genomeSequencer = g;
         } else if (dec.type === 'yc-logo') {
           const w = dec.width;
           const h = dec.height;
@@ -593,42 +770,6 @@ export default class WorldBuilder {
           g.rect(cLeftX, 3, 2, 8).fill(white);
           // Bottom horizontal bar
           g.rect(cLeftX, 9, 4, 2).fill(white);
-        } else if (dec.type === 'molecule-logo') {
-          const w = dec.width;
-          const h = dec.height;
-          const lavender = dec.color;
-          // Dark pedestal/post
-          const postH = 4;
-          const cx = Math.floor(w / 2);
-          g.rect(cx - 3, h - postH, 6, postH).fill(0x242C32);
-          // Mantle Bio blobby M logo — two zigzag rows of large overlapping circles
-          const r = 3.5;
-          const peakY = 2;
-          const valleyY = 6;
-          const spacing = 4.5;
-          // Top band: 5 blobs zigzagging — peaks up, valleys down
-          const topBlobs = [
-            { x: 2, y: valleyY },
-            { x: 2 + spacing, y: peakY },
-            { x: cx, y: valleyY },
-            { x: w - 2 - spacing, y: peakY },
-            { x: w - 2, y: valleyY },
-          ];
-          // Bottom band: mirrored — valleys up, peaks down
-          const mirrorY = h - postH;
-          const botBlobs = [
-            { x: 2, y: mirrorY - valleyY },
-            { x: 2 + spacing, y: mirrorY - peakY },
-            { x: cx, y: mirrorY - valleyY },
-            { x: w - 2 - spacing, y: mirrorY - peakY },
-            { x: w - 2, y: mirrorY - valleyY },
-          ];
-          for (const b of topBlobs) {
-            g.circle(b.x, b.y, r).fill(lavender);
-          }
-          for (const b of botBlobs) {
-            g.circle(b.x, b.y, r).fill(lavender);
-          }
         } else if (dec.type === 'planter-box') {
           const w = dec.width;
           const h = dec.height;
@@ -646,6 +787,139 @@ export default class WorldBuilder {
             // Leaf circle
             g.circle(px, turfY - stemH - 1, 2).fill(dec.color);
           }
+        } else if (dec.type === 'lab-table') {
+          const w = dec.width;
+          const h = dec.height;
+          // Table legs
+          g.rect(2, h - 8, 2, 8).fill(0x555555);
+          g.rect(w - 4, h - 8, 2, 8).fill(0x555555);
+          // Table surface
+          g.rect(0, h - 10, w, 3).fill(0x666666);
+          // Beaker — left side
+          g.rect(4, h - 18, 6, 8).fill({ color: 0x88CCFF, alpha: 0.5 });
+          g.rect(3, h - 18, 8, 1).fill(0x99DDFF); // rim
+          g.rect(5, h - 14, 4, 4).fill({ color: 0x66FF66, alpha: 0.6 }); // green liquid
+          // Erlenmeyer flask — center
+          g.moveTo(15, h - 18).lineTo(13, h - 11).lineTo(21, h - 11).lineTo(19, h - 18).closePath().fill({ color: 0x88CCFF, alpha: 0.5 });
+          g.rect(15, h - 20, 4, 2).fill(0x99DDFF); // neck
+          // Test tube rack — right side
+          g.rect(24, h - 12, 10, 2).fill(0x8B6914); // rack bar
+          // Three test tubes
+          g.rect(25, h - 18, 2, 8).fill({ color: 0x88CCFF, alpha: 0.5 });
+          g.rect(29, h - 18, 2, 8).fill({ color: 0x88CCFF, alpha: 0.5 });
+          g.rect(33, h - 18, 2, 8).fill({ color: 0x88CCFF, alpha: 0.5 });
+          // Store reference for animation
+          this.labTable = g;
+        } else if (dec.type === 'youtube-billboard' || dec.type === 'mantle-billboard' || dec.type === 'shepherd-billboard' || dec.type === 'stanford-billboard') {
+          const w = dec.width;
+          const h = dec.height;
+          const boardW = w;
+          const boardH = Math.floor(h * 0.55);
+          const boardY = 0;
+          const postTop = boardY + boardH - 2;
+          const postBottom = h;
+          // Two metal posts
+          g.rect(6, postTop, 3, postBottom - postTop).fill(0x666666);
+          g.rect(w - 9, postTop, 3, postBottom - postTop).fill(0x666666);
+          // Post caps
+          g.rect(5, postTop - 1, 5, 2).fill(0x777777);
+          g.rect(w - 10, postTop - 1, 5, 2).fill(0x777777);
+          // Billboard board
+          g.rect(0, boardY, boardW, boardH).fill(dec.color);
+          // Border frame
+          const borderColor = dec.type === 'mantle-billboard' ? 0x1A1F26
+            : dec.type === 'youtube-billboard' ? 0xCCCCCC : 0x333333;
+          g.rect(0, boardY, boardW, 1).fill(borderColor);
+          g.rect(0, boardY + boardH - 1, boardW, 1).fill(borderColor);
+          g.rect(0, boardY, 1, boardH).fill(borderColor);
+          g.rect(boardW - 1, boardY, 1, boardH).fill(borderColor);
+          // Logo sprite
+          const assetKey = dec.type === 'youtube-billboard' ? 'assets/other/youtube'
+            : dec.type === 'mantle-billboard' ? 'assets/other/mantle-logo'
+            : dec.type === 'stanford-billboard' ? 'assets/other/stanford' : 'assets/other/shepherd-logo';
+          const tex = Loader.assets[assetKey] as Texture;
+          if (tex) {
+            if (dec.type === 'shepherd-billboard') {
+              tex.source.scaleMode = 'linear';
+            }
+            const logo = new Sprite(tex);
+            const padding = 2;
+            const availW = boardW - padding * 2;
+            const availH = boardH - padding * 2;
+            const scale = Math.min(availW / tex.width, availH / tex.height);
+            logo.width = tex.width * scale;
+            logo.height = tex.height * scale;
+            logo.x = padding + (availW - logo.width) / 2;
+            logo.y = boardY + padding + (availH - logo.height) / 2;
+            g.addChild(logo);
+          }
+
+          // Interactive cue container — white border + pixel hint text
+          const cue = new Container();
+          // Thin white border around the billboard board
+          const border = new Graphics();
+          border.rect(-1, boardY - 1, boardW + 2, 1).fill(0xFFFFFF);           // top
+          border.rect(-1, boardY + boardH, boardW + 2, 1).fill(0xFFFFFF);      // bottom
+          border.rect(-1, boardY - 1, 1, boardH + 2).fill(0xFFFFFF);           // left
+          border.rect(boardW, boardY - 1, 1, boardH + 2).fill(0xFFFFFF);       // right
+          cue.addChild(border);
+          // Pixel hint above billboard — "[A] VIEW" drawn with 1px rects
+          const hint = new Graphics();
+          const ink = 0x333333;
+          const hx = Math.floor(boardW / 2) - 14;
+          const hy = boardY - 7;
+          // "[" — 2x5
+          hint.rect(hx, hy, 1, 5).fill(ink);
+          hint.rect(hx, hy, 2, 1).fill(ink);
+          hint.rect(hx, hy + 4, 2, 1).fill(ink);
+          // "A" — 3x5
+          hint.rect(hx + 3, hy + 1, 1, 4).fill(ink);
+          hint.rect(hx + 5, hy + 1, 1, 4).fill(ink);
+          hint.rect(hx + 4, hy, 1, 1).fill(ink);
+          hint.rect(hx + 3, hy + 2, 3, 1).fill(ink);
+          // "]" — 2x5
+          hint.rect(hx + 7, hy, 2, 1).fill(ink);
+          hint.rect(hx + 8, hy, 1, 5).fill(ink);
+          hint.rect(hx + 7, hy + 4, 2, 1).fill(ink);
+          // gap
+          // "V" — 3x5
+          const vx = hx + 12;
+          hint.rect(vx, hy, 1, 4).fill(ink);
+          hint.rect(vx + 2, hy, 1, 4).fill(ink);
+          hint.rect(vx + 1, hy + 4, 1, 1).fill(ink);
+          // "I" — 1x5
+          hint.rect(vx + 4, hy, 1, 5).fill(ink);
+          // "E" — 3x5
+          hint.rect(vx + 6, hy, 1, 5).fill(ink);
+          hint.rect(vx + 6, hy, 3, 1).fill(ink);
+          hint.rect(vx + 6, hy + 2, 3, 1).fill(ink);
+          hint.rect(vx + 6, hy + 4, 3, 1).fill(ink);
+          // "W" — 5x5
+          hint.rect(vx + 10, hy, 1, 5).fill(ink);
+          hint.rect(vx + 14, hy, 1, 5).fill(ink);
+          hint.rect(vx + 12, hy + 2, 1, 3).fill(ink);
+          hint.rect(vx + 11, hy + 4, 1, 1).fill(ink);
+          hint.rect(vx + 13, hy + 4, 1, 1).fill(ink);
+          cue.addChild(hint);
+          cue.visible = false;
+          g.addChild(cue);
+
+          // Register this billboard as an interactive sign
+          const container = new Container();
+          container.addChild(g);
+          container.x = dec.worldX;
+          container.y = decY;
+          this.decorationLayer.addChild(container);
+
+          this.signSprites.push({
+            container,
+            data: zone.sign,
+            worldX: dec.worldX + Math.floor(boardW / 2),
+            indicator: cue,
+          });
+
+          // Skip the default addChild below since we handled it
+          continue;
         } else if (dec.type === 'barrier') {
           const w = dec.width;
           const h = dec.height;
@@ -792,62 +1066,60 @@ export default class WorldBuilder {
           const brickDark = 0xA07850;
           const mortar = 0xD9C4A8;
           const rebar = 0x888888;
-          // Concrete foundation
+          const scaffoldColor = 0x888888;
+          const plankColor = 0x8B6914;
+          // Building body width (left portion), scaffold on the right
+          const buildW = Math.floor(w * 0.65);
+          const scaffX = buildW + 2;
+          const scaffW = w - scaffX;
+          // Concrete foundation spans full width
           g.rect(0, h - 4, w, 4).fill(0x999999);
           // Completed lower half — brick wall
           const brickH = Math.floor(h * 0.55);
           const brickTop = h - 4 - brickH;
-          g.rect(0, brickTop, w, brickH).fill(mortar);
+          g.rect(0, brickTop, buildW, brickH).fill(mortar);
           // Brick pattern rows
           const bw = 5;
           const bh = 3;
           for (let row = 0; row < Math.floor(brickH / bh); row++) {
             const by = brickTop + row * bh;
             const offset = row % 2 === 0 ? 0 : Math.floor(bw / 2);
-            for (let bx = offset; bx < w; bx += bw + 1) {
-              const clampedW = Math.min(bw, w - bx);
+            for (let bx = offset; bx < buildW; bx += bw + 1) {
+              const clampedW = Math.min(bw, buildW - bx);
               if (clampedW > 1) {
                 g.rect(bx, by, clampedW, bh - 1).fill(brickColor);
               }
             }
           }
-          // Window opening in the brick section
+          // Window openings in the brick section
           const winW = 6;
           const winH = 5;
-          const winX = Math.floor(w / 2) - Math.floor(winW / 2);
+          const winX = Math.floor(buildW / 2) - Math.floor(winW / 2);
           const winY = brickTop + 4;
           g.rect(winX, winY, winW, winH).fill(0x88CCFF);
           g.rect(winX + Math.floor(winW / 2), winY, 1, winH).fill(0x6699BB);
-          // Second window on left
           g.rect(4, winY, winW, winH).fill(0x88CCFF);
           g.rect(4 + Math.floor(winW / 2), winY, 1, winH).fill(0x6699BB);
           // Upper unfinished section — exposed concrete columns + rebar
           const frameTop = 0;
           const frameH = brickTop - frameTop;
-          // Left column
           g.rect(0, frameTop, 3, frameH).fill(0xAAAAAA);
-          // Right column
-          g.rect(w - 3, frameTop, 3, frameH).fill(0xAAAAAA);
-          // Middle column
-          g.rect(Math.floor(w / 2) - 1, frameTop, 3, frameH).fill(0xAAAAAA);
-          // Horizontal beam at top
-          g.rect(0, frameTop, w, 3).fill(0xAAAAAA);
-          // Horizontal beam mid-frame
-          g.rect(0, frameTop + Math.floor(frameH / 2), w, 2).fill(0xAAAAAA);
-          // Rebar sticking up from top — exposed reinforcement
+          g.rect(buildW - 3, frameTop, 3, frameH).fill(0xAAAAAA);
+          g.rect(Math.floor(buildW / 2) - 1, frameTop, 3, frameH).fill(0xAAAAAA);
+          g.rect(0, frameTop, buildW, 3).fill(0xAAAAAA);
+          g.rect(0, frameTop + Math.floor(frameH / 2), buildW, 2).fill(0xAAAAAA);
+          // Rebar sticking up from top
           g.rect(4, frameTop - 4, 1, 6).fill(rebar);
           g.rect(10, frameTop - 6, 1, 8).fill(rebar);
-          g.rect(w - 6, frameTop - 5, 1, 7).fill(rebar);
-          g.rect(w - 12, frameTop - 3, 1, 5).fill(rebar);
-          g.rect(Math.floor(w / 2) + 2, frameTop - 5, 1, 7).fill(rebar);
+          g.rect(buildW - 6, frameTop - 5, 1, 7).fill(rebar);
+          g.rect(Math.floor(buildW / 2) + 2, frameTop - 5, 1, 7).fill(rebar);
           // Partial brick fill on one side of upper section (work in progress)
           const partialTop = frameTop + Math.floor(frameH / 2) + 2;
           const partialH = frameH - Math.floor(frameH / 2) - 2;
           for (let row = 0; row < Math.floor(partialH / bh); row++) {
             const by = partialTop + row * bh;
             const offset = row % 2 === 0 ? 0 : Math.floor(bw / 2);
-            // Only fill the left third — looks like bricklaying in progress
-            const fillW = Math.floor(w * 0.4);
+            const fillW = Math.floor(buildW * 0.4);
             for (let bx = 3 + offset; bx < fillW; bx += bw + 1) {
               const clampedW = Math.min(bw, fillW - bx);
               if (clampedW > 1) {
@@ -856,7 +1128,24 @@ export default class WorldBuilder {
             }
           }
           // Yellow Shepherd accent — construction tape at top
-          g.rect(0, brickTop - 1, w, 1).fill(dec.color);
+          g.rect(0, brickTop - 1, buildW, 1).fill(dec.color);
+          // === Integrated scaffold on the right side ===
+          // Two vertical metal poles
+          g.rect(scaffX, frameTop, 2, h - 4 - frameTop).fill(scaffoldColor);
+          g.rect(scaffX + scaffW - 2, frameTop, 2, h - 4 - frameTop).fill(scaffoldColor);
+          // Horizontal wooden planks every ~10px
+          for (let py = h - 6; py >= frameTop; py -= 10) {
+            g.rect(scaffX, py, scaffW, 2).fill(plankColor);
+          }
+          // X-brace diagonals
+          const scaffH = h - 4 - frameTop;
+          for (let sy = frameTop; sy < frameTop + scaffH - 10; sy += 10) {
+            g.moveTo(scaffX + 2, sy).lineTo(scaffX + scaffW - 2, sy + 10).stroke({ color: scaffoldColor, width: 1 });
+            g.moveTo(scaffX + scaffW - 2, sy).lineTo(scaffX + 2, sy + 10).stroke({ color: scaffoldColor, width: 1 });
+          }
+          // Yellow hard hat sitting on top plank
+          g.roundRect(scaffX + Math.floor(scaffW / 2) - 4, frameTop - 3, 8, 4, 2).fill(0xF2C94C);
+          g.rect(scaffX + Math.floor(scaffW / 2) - 3, frameTop - 1, 6, 2).fill(0xF2C94C);
         } else if (dec.type === 'hard-hat-flag') {
           // Pole
           g.rect(0, 0, 2, dec.height).fill(0x888888);
@@ -874,31 +1163,35 @@ export default class WorldBuilder {
           this.drawCatVideo(g, 0, 0);
           g.rect(2, 12, 20, 1).fill(0x444444);
           this.ytScreen = g;
-        } else if (dec.type === 'play-button-trophy') {
+        } else if (dec.type === 'yt-backdrop') {
           const w = dec.width;
           const h = dec.height;
-          // Dark pedestal
-          g.rect(Math.floor(w / 2) - 4, h - 4, 8, 4).fill(0x555555);
-          // Silver plaque
-          g.roundRect(0, 2, w, h - 6, 2).fill(0xC0C0C0);
-          // Inner frame border
-          g.rect(1, 3, w - 2, h - 8).fill(0x999999);
-          // Inner fill
-          g.rect(2, 4, w - 4, h - 10).fill(0xC0C0C0);
-          // Play button triangle engraved in center
-          const cx = Math.floor(w / 2);
-          const cy = Math.floor((h - 4) / 2) + 2;
-          g.moveTo(cx - 3, cy - 4)
-            .lineTo(cx + 4, cy)
-            .lineTo(cx - 3, cy + 4)
-            .closePath()
-            .fill(0xDDDDDD);
-          // Shimmer highlight — will be animated
-          const shimmer = new Graphics();
-          shimmer.rect(0, 4, 2, h - 10).fill({ color: 0xFFFFFF, alpha: 0.4 });
-          shimmer.x = 2;
-          g.addChild(shimmer);
-          this.trophyShimmer = shimmer;
+          // Left stand pole
+          g.rect(0, 0, 2, h).fill(0x555555);
+          // Right stand pole
+          g.rect(w - 2, 0, 2, h).fill(0x555555);
+          // Horizontal crossbar at top
+          g.rect(0, 0, w, 2).fill(0x555555);
+          // Green screen canvas
+          g.rect(3, 2, 34, 34).fill(0x00CC44);
+          // Subtle wrinkle lines
+          g.rect(5, 14, 30, 1).fill(0x00AA33);
+          g.rect(5, 26, 30, 1).fill(0x00AA33);
+          // Left base foot (L-shaped)
+          g.rect(0, h - 2, 4, 2).fill(0x555555);
+          g.rect(0, h - 4, 2, 2).fill(0x555555);
+          // Right base foot (L-shaped)
+          g.rect(w - 4, h - 2, 4, 2).fill(0x555555);
+          g.rect(w - 2, h - 4, 2, 2).fill(0x555555);
+        } else if (dec.type === 'camera-preview') {
+          // Monitor — bezel
+          g.rect(0, 0, 22, 16).fill(0x333333);
+          // Screen area — initially off
+          g.rect(2, 1, 18, 13).fill(0x222233);
+          // Stand arm
+          g.rect(9, 15, 4, 2).fill(0x444444);
+          g.rect(6, 16, 10, 2).fill(0x444444);
+          this.cameraPreview = g;
         } else if (dec.type === 'camera-ring-light') {
           const w = dec.width;
           const h = dec.height;
@@ -931,6 +1224,12 @@ export default class WorldBuilder {
           redDot.circle(ringCx - 3, tripodTop - 3, 1).fill(0xFF0000);
           g.addChild(redDot);
           this.cameraLight = redDot;
+          // Camera flash — white circle over ring light area
+          const flash = new Graphics();
+          flash.circle(ringCx, ringCy, ringR + 3).fill({ color: 0xFFFFFF, alpha: 1 });
+          flash.alpha = 0;
+          g.addChild(flash);
+          this.cameraFlash = flash;
         }
 
         g.x = dec.worldX;
@@ -1014,8 +1313,8 @@ export default class WorldBuilder {
       g.rect(catX + 5, catY - 1, 1, 1).fill(0x222222);
       g.rect(catX + 6, catY - 1, 1, 1).fill(0x222222);
       // Tail up with excitement
-      g.rect(catX - 1, catY - 1, 1, 2).fill(dark);
-      g.rect(catX - 2, catY - 2, 1, 1).fill(dark);
+      g.rect(Math.max(sx, catX - 1), catY - 1, 1, 2).fill(dark);
+      g.rect(Math.max(sx, catX - 2), catY - 2, 1, 1).fill(dark);
     } else {
       // Scene: Cat in a box — pops in and out
       g.rect(sx, sy, 20, 11).fill(0xAABBCC); // soft blue bg
@@ -1062,41 +1361,6 @@ export default class WorldBuilder {
         g.rect(sx + 7, sy + 4, 2, 1).fill(cat);
         g.rect(sx + 13, sy + 4, 2, 1).fill(cat);
       }
-    }
-  }
-
-  private buildSigns(): void {
-    for (const zone of ZONES) {
-      const sign = zone.sign;
-      const container = new Container();
-
-      // Sign post
-      const post = new Graphics();
-      post.rect(5, 8, 2, 12).fill(0x8B4513);
-      container.addChild(post);
-
-      // Sign board
-      const board = new Graphics();
-      board.rect(0, 0, 12, 10).fill(0xFFF8DC);
-      board.rect(0, 0, 12, 10).stroke({ color: 0x8B4513, width: 1 });
-      container.addChild(board);
-
-      // Exclamation mark indicator
-      const indicator = new Graphics();
-      indicator.rect(5, 2, 2, 4).fill(0x333333);
-      indicator.rect(5, 7, 2, 2).fill(0x333333);
-      container.addChild(indicator);
-
-      container.x = sign.worldX;
-      container.y = PORTFOLIO_CONFIG.world.groundY - 20;
-      this.decorationLayer.addChild(container);
-
-      this.signSprites.push({
-        container,
-        data: sign,
-        worldX: sign.worldX,
-        indicator,
-      });
     }
   }
 

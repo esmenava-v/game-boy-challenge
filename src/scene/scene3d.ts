@@ -50,6 +50,10 @@ export default class Scene3D extends THREE.Group {
     this.gameBoyScene.onSoundChanged();
   }
 
+  public onDayNightChanged(mode: 'day' | 'night'): void {
+    this.gameBoyScene.onDayNightChanged(mode);
+  }
+
   private init(): void {
     this.initRaycaster();
     this.initGameBoy();

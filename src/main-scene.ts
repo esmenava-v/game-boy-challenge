@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { EventEmitter } from 'pixi.js';
 import Scene3D from "./scene/scene3d";
 import UI from './ui/ui';
+import { DAY_NIGHT_CONFIG } from './Data/Configs/Main/day-night-config';
 
 export default class MainScene {
   public events: EventEmitter;
@@ -31,6 +32,10 @@ export default class MainScene {
 
   public update(dt: number): void {
     this.scene3D.update(dt);
+  }
+
+  public onDayNightChanged(): void {
+    this.scene3D.onDayNightChanged(DAY_NIGHT_CONFIG.mode);
   }
 
   private init(): void {

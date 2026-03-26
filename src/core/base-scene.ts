@@ -16,6 +16,7 @@ import WebGL from 'three/addons/capabilities/WebGL.js';
 import isMobile from 'ismobilejs';
 import { GAME_BOY_CONFIG } from '../scene/game-boy-scene/game-boy/data/game-boy-config';
 import { GLOBAL_LIGHT_CONFIG } from '../Data/Configs/Main/global-light-config';
+import { DAY_NIGHT_CONFIG, initDayNightMode } from '../Data/Configs/Main/day-night-config';
 
 export default class BaseScene {
   private pixiApp: Application;
@@ -44,6 +45,7 @@ export default class BaseScene {
   }
 
   public createGameScene(): void {
+    initDayNightMode();
     const data = {
       scene: this.scene,
       camera: this.camera,
@@ -373,6 +375,44 @@ export default class BaseScene {
 
       legend.appendChild(groupEl);
     });
+
+    // Day/night toggle
+    const sep = document.createElement('div');
+    sep.className = 'ctrl-sep';
+    legend.appendChild(sep);
+
+    const toggleGroup = document.createElement('div');
+    toggleGroup.className = 'ctrl-group';
+
+    const toggleBtn = document.createElement('div');
+    toggleBtn.className = 'ctrl-key wide day-night-toggle';
+    toggleBtn.textContent = DAY_NIGHT_CONFIG.mode === 'day' ? '☀' : '☾';
+    toggleBtn.style.cursor = 'pointer';
+    toggleBtn.style.pointerEvents = 'auto';
+    toggleBtn.style.fontSize = '14px';
+    toggleBtn.style.minWidth = '28px';
+    toggleBtn.style.height = '28px';
+
+    toggleBtn.addEventListener('click', () => {
+      DAY_NIGHT_CONFIG.mode = DAY_NIGHT_CONFIG.mode === 'day' ? 'night' : 'day';
+      toggleBtn.textContent = DAY_NIGHT_CONFIG.mode === 'day' ? '☀' : '☾';
+      if (this.mainScene) {
+        this.mainScene.onDayNightChanged();
+      }
+    });
+
+    toggleGroup.appendChild(toggleBtn);
+
+    const toggleLabel = document.createElement('div');
+    toggleLabel.className = 'ctrl-label';
+    toggleLabel.textContent = DAY_NIGHT_CONFIG.mode === 'day' ? 'day' : 'night';
+    toggleGroup.appendChild(toggleLabel);
+
+    toggleBtn.addEventListener('click', () => {
+      toggleLabel.textContent = DAY_NIGHT_CONFIG.mode === 'day' ? 'day' : 'night';
+    });
+
+    legend.appendChild(toggleGroup);
   }
 
   private initUpdate(): void {

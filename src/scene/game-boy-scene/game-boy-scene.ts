@@ -66,6 +66,11 @@ export default class GameBoyScene extends THREE.Group {
     this.gameBoyController.onUISoundIconChanged();
   }
 
+  public onDayNightChanged(mode: 'day' | 'night'): void {
+    const cartridges: CartridgesController = this.activeObjects[SCENE_OBJECT_TYPE.Cartridges] as CartridgesController;
+    cartridges.onDayNightChanged(mode);
+  }
+
   private init(): void {
     this.initGameBoy();
     this.initCartridgesController();

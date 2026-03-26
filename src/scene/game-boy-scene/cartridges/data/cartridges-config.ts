@@ -65,8 +65,16 @@ const CARTRIDGES_BY_TYPE_CONFIG = {
     game: GAME_TYPE.SpaceInvaders,
   },
   [CARTRIDGE_TYPE.Portfolio]: {
-    texture: 'baked-cartridge-tetris',
-    textureInPocket: 'baked-cartridge-tetris-in-pocket',
+    textures: {
+      day: {
+        texture: 'baked-cartridge-day-esme',
+        textureInPocket: 'baked-cartridge-day-esme-in-pocket',
+      },
+      night: {
+        texture: 'baked-cartridge-night-esme',
+        textureInPocket: 'baked-cartridge-night-esme-in-pocket',
+      },
+    },
     game: GAME_TYPE.Portfolio,
   },
 }

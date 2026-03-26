@@ -82,8 +82,6 @@ export default class IntroScreen extends GameScreenAbstract {
   private init(): void {
     this.initWelcomePage();
     this.initNamePage();
-    this.initHowToPlayPage();
-
     this.visible = false;
   }
 
@@ -169,33 +167,6 @@ export default class IntroScreen extends GameScreenAbstract {
     this.createSeparator(boxX, boxW, boxY + 36, page);
     this.createText('I LIKE TO USE', 0x333333, boxY + 44, page);
     this.createText('CODE AS ART', 0x333333, boxY + 56, page);
-
-    const blink = this.createText('[A] NEXT', 0x999999, boxY + boxH - 14, page);
-    this.blinkTexts.push(blink);
-  }
-
-  private initHowToPlayPage(): void {
-    const screenW = PORTFOLIO_CONFIG.screen.width;
-    const screenH = PORTFOLIO_CONFIG.screen.height;
-    const boxW = 140;
-    const boxH = 100;
-    const boxX = (screenW - boxW) / 2;
-    const boxY = (screenH - boxH) / 2;
-
-    const page = new Container();
-    page.visible = false;
-    this.addChild(page);
-    this.pages.push(page);
-
-    this.createBackdrop(page);
-    this.createPanel(boxX, boxY, boxW, boxH, page);
-    this.createText('HOW TO PLAY', 0x000000, boxY + 8, page);
-    this.createSeparator(boxX, boxW, boxY + 20, page);
-    this.createText('USE ARROWS TO', 0x333333, boxY + 28, page);
-    this.createText('WALK & JUMP', 0x333333, boxY + 40, page);
-
-    this.createText('PRESS [A] NEAR', 0x333333, boxY + 56, page);
-    this.createText('SIGNS TO READ', 0x333333, boxY + 68, page);
 
     const blink = this.createText('[A] START', 0x999999, boxY + boxH - 14, page);
     this.blinkTexts.push(blink);

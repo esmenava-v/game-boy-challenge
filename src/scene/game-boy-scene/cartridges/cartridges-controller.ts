@@ -125,6 +125,12 @@ export default class CartridgesController extends THREE.Group {
     }
   }
 
+  public onDayNightChanged(mode: 'day' | 'night'): void {
+    this.cartridgesArray.forEach(cartridge => {
+      cartridge.setDayNightMode(mode);
+    });
+  }
+
   public onPointerOver(): void { }
 
   public onPointerOut(): void { }

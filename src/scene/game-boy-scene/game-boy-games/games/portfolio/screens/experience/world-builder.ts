@@ -862,6 +862,15 @@ export default class WorldBuilder {
           border.rect(-1, boardY + boardH, boardW + 2, 1).fill(0xFFFFFF);      // bottom
           border.rect(-1, boardY - 1, 1, boardH + 2).fill(0xFFFFFF);           // left
           border.rect(boardW, boardY - 1, 1, boardH + 2).fill(0xFFFFFF);       // right
+          // White highlight around posts (sides + bottom only, no top so it merges with the board)
+          // Left post (post at x=6, w=3; cap at x=5, w=5)
+          border.rect(4, boardY + boardH, 1, postBottom - boardH - boardY + 1).fill(0xFFFFFF);   // left side
+          border.rect(10, boardY + boardH, 1, postBottom - boardH - boardY + 1).fill(0xFFFFFF);  // right side
+          border.rect(4, postBottom, 7, 1).fill(0xFFFFFF);                                        // bottom
+          // Right post (post at x=w-9, w=3; cap at x=w-10, w=5)
+          border.rect(w - 11, boardY + boardH, 1, postBottom - boardH - boardY + 1).fill(0xFFFFFF); // left side
+          border.rect(w - 5, boardY + boardH, 1, postBottom - boardH - boardY + 1).fill(0xFFFFFF);  // right side
+          border.rect(w - 11, postBottom, 7, 1).fill(0xFFFFFF);                                      // bottom
           cue.addChild(border);
           // Pixel hint above billboard — "[A] VIEW" drawn with 1px rects
           const hint = new Graphics();

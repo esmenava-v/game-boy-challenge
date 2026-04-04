@@ -223,36 +223,57 @@ export default class GameBoyController {
       introText.innerHTML = "Click to start";
 
       if (SCENE_CONFIG.isMobile) {
-        // Blink the intro text on mobile
-        const blinkInterval = setInterval(() => {
-          introText.style.opacity =
-            introText.style.opacity === "0" ? "0.5" : "0";
-        }, 700);
+        // Mobile: show profile intro with name, title, and CTA
+        introText.classList.add("fastHide");
 
-        window.addEventListener(
-          "pointerdown",
-          () => {
-            if (this.isIntroActive) {
-              this.isIntroActive = false;
-              clearInterval(blinkInterval);
-              introText.classList.add("hide");
-              this.activeObjects[SCENE_OBJECT_TYPE.GameBoy].disableIntro();
+        const profileIntro = document.querySelector(
+          ".profile-intro",
+        ) as HTMLElement;
+        profileIntro.innerHTML = `
+          <div class="profile-name">esme nava</div>
+          <div class="profile-title">design engineer</div>
+          <div class="profile-cta profile-cta--blink">tap game to start</div>
+        `;
+        profileIntro.classList.add("show");
+        profileIntro.style.left = "50%";
+        profileIntro.style.transform = "translateX(-50%)";
+        profileIntro.style.textAlign = "center";
+        profileIntro.style.top = "15%";
 
-              // Animate Game Boy sliding up into view
-              const gameBoy = this.activeObjects[SCENE_OBJECT_TYPE.GameBoy];
-              new TWEEN.Tween(gameBoy.position)
-                .to({ y: 0 }, 800)
-                .easing(TWEEN.Easing.Quadratic.Out)
-                .start();
+        // Start only when cartridge is tapped
+        const onCartridgeTap = (e: PointerEvent) => {
+          if (!this.isIntroActive) return;
 
-              // Simultaneously insert the cartridge
-              this.activeObjects[SCENE_OBJECT_TYPE.Cartridges].insertCartridge(
-                CARTRIDGE_TYPE.Portfolio,
-              );
-            }
-          },
-          { once: true },
-        );
+          const x = (e.clientX / window.innerWidth) * 2 - 1;
+          const y = -(e.clientY / window.innerHeight) * 2 + 1;
+          const intersect = this.raycasterController.checkIntersection(x, y);
+
+          if (
+            intersect &&
+            intersect.object &&
+            intersect.object.userData.sceneObjectType === SCENE_OBJECT_TYPE.Cartridges
+          ) {
+            this.isIntroActive = false;
+            profileIntro.classList.add("hide");
+            this.activeObjects[SCENE_OBJECT_TYPE.GameBoy].disableIntro();
+
+            // Animate Game Boy sliding up into view
+            const gameBoy = this.activeObjects[SCENE_OBJECT_TYPE.GameBoy];
+            new TWEEN.Tween(gameBoy.position)
+              .to({ y: 0 }, 800)
+              .easing(TWEEN.Easing.Quadratic.Out)
+              .start();
+
+            // Simultaneously insert the cartridge
+            this.activeObjects[SCENE_OBJECT_TYPE.Cartridges].insertCartridge(
+              CARTRIDGE_TYPE.Portfolio,
+            );
+
+            window.removeEventListener("pointerdown", onCartridgeTap);
+          }
+        };
+
+        window.addEventListener("pointerdown", onCartridgeTap);
       } else {
         // Desktop: show profile intro instead of plain "Click to start"
         introText.classList.add("fastHide");

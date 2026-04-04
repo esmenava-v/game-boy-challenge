@@ -324,13 +324,24 @@ export default class GameBoyController {
           if (this.isIntroActive) positionProfileText();
         });
 
-        window.addEventListener("pointerdown", () => {
-          if (this.isIntroActive) {
+        const onCartridgeClick = (e: PointerEvent) => {
+          if (!this.isIntroActive) return;
+
+          const intersect = this.raycasterController.checkIntersection(e.clientX, e.clientY);
+
+          if (
+            intersect &&
+            intersect.object &&
+            intersect.object.userData.sceneObjectType === SCENE_OBJECT_TYPE.Cartridges
+          ) {
             this.isIntroActive = false;
             this.activeObjects[SCENE_OBJECT_TYPE.GameBoy].disableIntro();
             profileIntro.classList.add("hide");
+            window.removeEventListener("pointerdown", onCartridgeClick);
           }
-        });
+        };
+
+        window.addEventListener("pointerdown", onCartridgeClick);
       }
     }
   }

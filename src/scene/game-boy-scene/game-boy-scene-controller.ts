@@ -231,8 +231,8 @@ export default class GameBoyController {
         ) as HTMLElement;
         profileIntro.innerHTML = `
           <div class="profile-name">esme nava</div>
-          <div class="profile-title">design engineer</div>
-          <div class="profile-cta profile-cta--blink">tap game to start</div>
+          <div class="profile-title">Design Engineer</div>
+          <div class="profile-cta profile-cta--blink">Tap Game to Start</div>
         `;
         profileIntro.classList.add("show");
         profileIntro.style.left = "50%";
@@ -281,8 +281,8 @@ export default class GameBoyController {
         ) as HTMLElement;
         profileIntro.innerHTML = `
           <div class="profile-name">esme nava</div>
-          <div class="profile-title">design engineer</div>
-          <div class="profile-cta profile-cta--blink">click game to start</div>
+          <div class="profile-title">Design Engineer</div>
+          <div class="profile-cta profile-cta--blink">Click Game to Start</div>
         `;
         profileIntro.classList.add("show");
 

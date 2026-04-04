@@ -35,6 +35,7 @@ const PixiAssets: string[] = [
   'assets/other/shepherd-logo.png',
   'assets/other/mantle-logo.png',
   'assets/other/youtube.png',
+  'assets/other/rose-logo.png',
 
   'assets/spritesheets/tetris-sheet.json',
   'fonts/tetris.ttf',

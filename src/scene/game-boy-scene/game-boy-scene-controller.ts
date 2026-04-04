@@ -1,23 +1,26 @@
-import * as THREE from 'three';
-import { Application, EventEmitter } from 'pixi.js';
-import { SCENE_OBJECT_TYPE } from './data/game-boy-scene-data';
-import { GAME_BOY_CONFIG } from './game-boy/data/game-boy-config';
-import { CARTRIDGES_BY_TYPE_CONFIG, CARTRIDGE_TYPE } from './cartridges/data/cartridges-config';
-import { BUTTON_TYPE } from './game-boy/data/game-boy-data';
-import SCENE_CONFIG from '../../Data/Configs/Main/scene-config';
-import { CARTRIDGE_STATE } from './game-boy/data/game-boy-data';
-import { TETRIS_CONFIG } from './game-boy-games/games/tetris/data/tetris-config';
-import { GAME_TYPE } from './game-boy-games/data/games-config';
-import { SPACE_INVADERS_CONFIG } from './game-boy-games/games/space-invaders/data/space-invaders-config';
-import { SOUNDS_CONFIG } from '../../Data/Configs/Main/sounds-config';
-import DEBUG_CONFIG from '../../Data/Configs/Main/debug-config';
-import TWEEN from 'three/addons/libs/tween.module.js';
-import { OrbitControls } from 'three/examples/jsm/Addons.js';
-import RaycasterController from '../raycaster-controller';
-import GameBoyDebug from './game-boy-debug';
-import CameraController from './camera-controller/camera-controller';
-import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
-import Cartridge from './cartridges/cartridge';
+import * as THREE from "three";
+import { Application, EventEmitter } from "pixi.js";
+import { SCENE_OBJECT_TYPE } from "./data/game-boy-scene-data";
+import { GAME_BOY_CONFIG } from "./game-boy/data/game-boy-config";
+import {
+  CARTRIDGES_BY_TYPE_CONFIG,
+  CARTRIDGE_TYPE,
+} from "./cartridges/data/cartridges-config";
+import { BUTTON_TYPE } from "./game-boy/data/game-boy-data";
+import SCENE_CONFIG from "../../Data/Configs/Main/scene-config";
+import { CARTRIDGE_STATE } from "./game-boy/data/game-boy-data";
+import { TETRIS_CONFIG } from "./game-boy-games/games/tetris/data/tetris-config";
+import { GAME_TYPE } from "./game-boy-games/data/games-config";
+import { SPACE_INVADERS_CONFIG } from "./game-boy-games/games/space-invaders/data/space-invaders-config";
+import { SOUNDS_CONFIG } from "../../Data/Configs/Main/sounds-config";
+import DEBUG_CONFIG from "../../Data/Configs/Main/debug-config";
+import TWEEN from "three/addons/libs/tween.module.js";
+import { OrbitControls } from "three/examples/jsm/Addons.js";
+import RaycasterController from "../raycaster-controller";
+import GameBoyDebug from "./game-boy-debug";
+import CameraController from "./camera-controller/camera-controller";
+import { OutlinePass } from "three/addons/postprocessing/OutlinePass.js";
+import Cartridge from "./cartridges/cartridge";
 
 export default class GameBoyController {
   public events: EventEmitter;
@@ -29,6 +32,7 @@ export default class GameBoyController {
   private gameBoyDebug: GameBoyDebug;
   private games: any;
   private cameraController: CameraController;
+  private camera: THREE.PerspectiveCamera;
   private pixiApp: Application;
 
   private pointerPosition: THREE.Vector2;
@@ -38,7 +42,6 @@ export default class GameBoyController {
   private isIntroActive: boolean;
 
   constructor(data: any) {
-
     this.events = new EventEmitter();
 
     this.orbitControls = data.orbitControls;
@@ -48,6 +51,7 @@ export default class GameBoyController {
     this.gameBoyDebug = data.gameBoyDebug;
     this.games = data.games;
     this.cameraController = data.cameraController;
+    this.camera = data.camera;
     this.pixiApp = data.pixiApp;
 
     this.pointerPosition = new THREE.Vector2();
@@ -55,7 +59,8 @@ export default class GameBoyController {
     this.dragPointerDownPosition = new THREE.Vector2();
     this.draggingObject = null;
 
-    this.isIntroActive = GAME_BOY_CONFIG.intro.enabled && !DEBUG_CONFIG.startState.disableIntro;
+    this.isIntroActive =
+      GAME_BOY_CONFIG.intro.enabled && !DEBUG_CONFIG.startState.disableIntro;
 
     this.init();
   }
@@ -69,10 +74,13 @@ export default class GameBoyController {
       return;
     }
 
-    const intersect = this.raycasterController.checkIntersection(this.pointerPosition.x, this.pointerPosition.y);
+    const intersect = this.raycasterController.checkIntersection(
+      this.pointerPosition.x,
+      this.pointerPosition.y,
+    );
 
     if (intersect === null) {
-      this.pixiApp.canvas.style.cursor = 'auto';
+      this.pixiApp.canvas.style.cursor = "auto";
       this.resetGlow();
     }
 
@@ -146,8 +154,12 @@ export default class GameBoyController {
   private checkToGlow(intersect: THREE.Intersection | null): void {
     const object = intersect?.object;
 
-    if (object === null || !object.userData.isActive || !object.userData.showOutline) {
-      this.pixiApp.canvas.style.cursor = 'auto';
+    if (
+      object === null ||
+      !object.userData.isActive ||
+      !object.userData.showOutline
+    ) {
+      this.pixiApp.canvas.style.cursor = "auto";
       this.resetGlow();
 
       this.activeObjects[SCENE_OBJECT_TYPE.Cartridges].onPointerOut();
@@ -156,10 +168,11 @@ export default class GameBoyController {
     }
 
     if (object.userData.isActive && object.userData.showOutline) {
-      this.pixiApp.canvas.style.cursor = 'pointer';
+      this.pixiApp.canvas.style.cursor = "pointer";
 
       const sceneObjectType = object.userData.sceneObjectType;
-      const meshes = this.activeObjects[sceneObjectType].getOutlineMeshes(object);
+      const meshes =
+        this.activeObjects[sceneObjectType].getOutlineMeshes(object);
 
       this.setGlow(meshes);
     }
@@ -201,42 +214,86 @@ export default class GameBoyController {
   }
 
   private initIntroSignal(): void {
-    const introText = document.querySelector('.intro-text') as HTMLElement;
+    const introText = document.querySelector(".intro-text") as HTMLElement;
 
-    if (GAME_BOY_CONFIG.intro.enabled && !DEBUG_CONFIG.startState.disableIntro) {
-      introText.innerHTML = 'Click to start';
+    if (
+      GAME_BOY_CONFIG.intro.enabled &&
+      !DEBUG_CONFIG.startState.disableIntro
+    ) {
+      introText.innerHTML = "Click to start";
 
       if (SCENE_CONFIG.isMobile) {
         // Blink the intro text on mobile
         const blinkInterval = setInterval(() => {
-          introText.style.opacity = introText.style.opacity === '0' ? '0.5' : '0';
+          introText.style.opacity =
+            introText.style.opacity === "0" ? "0.5" : "0";
         }, 700);
 
-        window.addEventListener('pointerdown', () => {
-          if (this.isIntroActive) {
-            this.isIntroActive = false;
-            clearInterval(blinkInterval);
-            introText.classList.add('hide');
-            this.activeObjects[SCENE_OBJECT_TYPE.GameBoy].disableIntro();
+        window.addEventListener(
+          "pointerdown",
+          () => {
+            if (this.isIntroActive) {
+              this.isIntroActive = false;
+              clearInterval(blinkInterval);
+              introText.classList.add("hide");
+              this.activeObjects[SCENE_OBJECT_TYPE.GameBoy].disableIntro();
 
-            // Animate Game Boy sliding up into view
-            const gameBoy = this.activeObjects[SCENE_OBJECT_TYPE.GameBoy];
-            new TWEEN.Tween(gameBoy.position)
-              .to({ y: 0 }, 800)
-              .easing(TWEEN.Easing.Quadratic.Out)
-              .start();
+              // Animate Game Boy sliding up into view
+              const gameBoy = this.activeObjects[SCENE_OBJECT_TYPE.GameBoy];
+              new TWEEN.Tween(gameBoy.position)
+                .to({ y: 0 }, 800)
+                .easing(TWEEN.Easing.Quadratic.Out)
+                .start();
 
-            // Simultaneously insert the cartridge
-            this.activeObjects[SCENE_OBJECT_TYPE.Cartridges].insertCartridge(CARTRIDGE_TYPE.Portfolio);
-          }
-        }, { once: true });
+              // Simultaneously insert the cartridge
+              this.activeObjects[SCENE_OBJECT_TYPE.Cartridges].insertCartridge(
+                CARTRIDGE_TYPE.Portfolio,
+              );
+            }
+          },
+          { once: true },
+        );
       } else {
-        // Desktop: existing behavior
-        window.addEventListener('pointerdown', () => {
+        // Desktop: show profile intro instead of plain "Click to start"
+        introText.classList.add("fastHide");
+
+        const profileIntro = document.querySelector(
+          ".profile-intro",
+        ) as HTMLElement;
+        profileIntro.innerHTML = `
+          <div class="profile-name">esme nava</div>
+          <div class="profile-title">design engineer</div>
+          <div class="profile-cta profile-cta--blink">click game to start</div>
+        `;
+        profileIntro.classList.add("show");
+
+        // Position text above the cartridge by projecting its 3D position to screen
+        const cartridge =
+          this.activeObjects[SCENE_OBJECT_TYPE.Cartridges].getAllMeshes()[0];
+        const positionProfileText = () => {
+          const worldPos = cartridge.position.clone();
+          worldPos.project(this.camera);
+          const screenX = (worldPos.x * 0.5 + 0.2) * window.innerWidth;
+          const screenY = (-worldPos.y * 0.5 + 0.4) * window.innerHeight;
+          const textHeight = profileIntro.getBoundingClientRect().height;
+          profileIntro.style.bottom = `${
+            window.innerHeight - screenY + textHeight + 24
+          }px`;
+          profileIntro.style.right = `${window.innerWidth - screenX}px`;
+          profileIntro.style.left = "";
+          profileIntro.style.transform = "none";
+        };
+
+        positionProfileText();
+        window.addEventListener("resize", () => {
+          if (this.isIntroActive) positionProfileText();
+        });
+
+        window.addEventListener("pointerdown", () => {
           if (this.isIntroActive) {
             this.isIntroActive = false;
             this.activeObjects[SCENE_OBJECT_TYPE.GameBoy].disableIntro();
-            introText.classList.add('hide');
+            profileIntro.classList.add("hide");
           }
         });
       }
@@ -248,60 +305,120 @@ export default class GameBoyController {
     const cartridges = this.activeObjects[SCENE_OBJECT_TYPE.Cartridges];
     const background = this.activeObjects[SCENE_OBJECT_TYPE.Background];
 
-    gameBoy.events.on('onButtonPress', (buttonType: string) => {
+    gameBoy.events.on("onButtonPress", (buttonType: string) => {
       if (buttonType === BUTTON_TYPE.Start && !this.games.hasGame()) {
-        this.activeObjects[SCENE_OBJECT_TYPE.Cartridges].insertCartridge(CARTRIDGE_TYPE.Portfolio);
+        this.activeObjects[SCENE_OBJECT_TYPE.Cartridges].insertCartridge(
+          CARTRIDGE_TYPE.Portfolio,
+        );
         return;
       }
       this.games.onButtonPress(buttonType);
     });
-    gameBoy.events.on('onButtonUp', (buttonType: string) => this.games.onButtonUp(buttonType));
-    gameBoy.events.on('onPowerOn', () => this.onPowerOn());
-    gameBoy.events.on('onPowerOff', () => this.onPowerOff());
-    gameBoy.events.on('onGameBoyVolumeChanged', () => this.onGameBoyVolumeChanged());
-    gameBoy.events.on('onZoomIn', () => this.cameraController.zoomIn());
-    gameBoy.events.on('onZoomOut', () => this.cameraController.zoomOut());
-    cartridges.events.on('onCartridgeInserting', () => this.onCartridgeInserting());
-    cartridges.events.on('onCartridgeInserted', (cartridge: Cartridge) => this.onCartridgeInserted(cartridge));
-    cartridges.events.on('onCartridgeEjecting', () => this.onCartridgeEjecting());
-    cartridges.events.on('onCartridgeEjected', () => this.onCartridgeEjected());
-    cartridges.events.on('cartridgeTypeChanged', () => this.onCartridgeTypeChanged());
-    cartridges.events.on('cartridgeInsertSound', () => gameBoy.playCartridgeInsertSound());
-    cartridges.events.on('cartridgeEjectSound', () => gameBoy.playCartridgeEjectSound());
-    cartridges.events.on('cartridgeStartEjecting', () => gameBoy.setCartridgePocketStandardTexture());
-    background.events.on('onClick', () => gameBoy.onBackgroundClick());
+    gameBoy.events.on("onButtonUp", (buttonType: string) =>
+      this.games.onButtonUp(buttonType),
+    );
+    gameBoy.events.on("onPowerOn", () => this.onPowerOn());
+    gameBoy.events.on("onPowerOff", () => this.onPowerOff());
+    gameBoy.events.on("onGameBoyVolumeChanged", () =>
+      this.onGameBoyVolumeChanged(),
+    );
+    gameBoy.events.on("onZoomIn", () => this.cameraController.zoomIn());
+    gameBoy.events.on("onZoomOut", () => this.cameraController.zoomOut());
+    cartridges.events.on("onCartridgeInserting", () =>
+      this.onCartridgeInserting(),
+    );
+    cartridges.events.on("onCartridgeInserted", (cartridge: Cartridge) =>
+      this.onCartridgeInserted(cartridge),
+    );
+    cartridges.events.on("onCartridgeEjecting", () =>
+      this.onCartridgeEjecting(),
+    );
+    cartridges.events.on("onCartridgeEjected", () => this.onCartridgeEjected());
+    cartridges.events.on("cartridgeTypeChanged", () =>
+      this.onCartridgeTypeChanged(),
+    );
+    cartridges.events.on("cartridgeInsertSound", () =>
+      gameBoy.playCartridgeInsertSound(),
+    );
+    cartridges.events.on("cartridgeEjectSound", () =>
+      gameBoy.playCartridgeEjectSound(),
+    );
+    cartridges.events.on("cartridgeStartEjecting", () =>
+      gameBoy.setCartridgePocketStandardTexture(),
+    );
+    background.events.on("onClick", () => gameBoy.onBackgroundClick());
   }
 
   private initCameraControllerSignals(): void {
     const cartridges = this.activeObjects[SCENE_OBJECT_TYPE.Cartridges];
 
-    this.cameraController.events.on('onRotationDragDisabled', () => this.onRotationDragDisabled());
-    this.cameraController.events.on('onZoom', (zoomPercent: number) => cartridges.onZoomChanged(zoomPercent));
+    this.cameraController.events.on("onRotationDragDisabled", () =>
+      this.onRotationDragDisabled(),
+    );
+    this.cameraController.events.on("onZoom", (zoomPercent: number) =>
+      cartridges.onZoomChanged(zoomPercent),
+    );
   }
 
   private initGamesSignals(): void {
-    this.games.events.on('onTetrisBestScoreChange', () => this.onTetrisBestScoreChange());
-    this.games.events.on('onSpaceInvadersBestScoreChange', () => this.onSpaceInvadersBestScoreChange());
-    this.games.events.on('gameStarted', (gameType: GAME_TYPE) => this.onGameStarted(gameType));
-    this.games.events.on('gameStopped', (gameType: GAME_TYPE) => this.onGameStopped(gameType));
+    this.games.events.on("onTetrisBestScoreChange", () =>
+      this.onTetrisBestScoreChange(),
+    );
+    this.games.events.on("onSpaceInvadersBestScoreChange", () =>
+      this.onSpaceInvadersBestScoreChange(),
+    );
+    this.games.events.on("gameStarted", (gameType: GAME_TYPE) =>
+      this.onGameStarted(gameType),
+    );
+    this.games.events.on("gameStopped", (gameType: GAME_TYPE) =>
+      this.onGameStopped(gameType),
+    );
   }
 
   private initDebugSignals(): void {
     const gameBoy = this.activeObjects[SCENE_OBJECT_TYPE.GameBoy];
 
-    this.gameBoyDebug.events.on('rotationCursorChanged', () => gameBoy.onDebugRotationChanged());
-    this.gameBoyDebug.events.on('rotationDragChanged', () => gameBoy.onDebugRotationChanged());
-    this.gameBoyDebug.events.on('fpsMeterChanged', () => this.events.emit('fpsMeterChanged'));
-    this.gameBoyDebug.events.on('orbitControlsChanged', () => this.onOrbitControlsChanged());
-    this.gameBoyDebug.events.on('turnOnButtonClicked', () => gameBoy.powerButtonSwitch());
-    this.gameBoyDebug.events.on('ejectCartridgeButtonClicked', () => this.onEjectCartridgeButtonClicked());
-    this.gameBoyDebug.events.on('insertCartridgeButtonClicked', (cartridgeType: CARTRIDGE_TYPE) => this.onInsertCartridgeButtonClicked(cartridgeType));
-    this.gameBoyDebug.events.on('audioEnabledChanged', () => this.onDebugSoundsEnabledChanged());
-    this.gameBoyDebug.events.on('masterVolumeChanged', () => this.onMasterVolumeChanged());
-    this.gameBoyDebug.events.on('gameBoyVolumeChanged', () => this.onDebugGameBoyVolumeChanged());
-    this.gameBoyDebug.events.on('restartTetrisButtonClicked', (level: number) => this.restartTetrisButtonClicked(level));
-    this.gameBoyDebug.events.on('tetrisDisableFalling', () => this.onTetrisDisableFalling());
-    this.gameBoyDebug.events.on('tetrisClearBottomLine', () => this.onTetrisClearBottomLine());
+    this.gameBoyDebug.events.on("rotationCursorChanged", () =>
+      gameBoy.onDebugRotationChanged(),
+    );
+    this.gameBoyDebug.events.on("rotationDragChanged", () =>
+      gameBoy.onDebugRotationChanged(),
+    );
+    this.gameBoyDebug.events.on("fpsMeterChanged", () =>
+      this.events.emit("fpsMeterChanged"),
+    );
+    this.gameBoyDebug.events.on("orbitControlsChanged", () =>
+      this.onOrbitControlsChanged(),
+    );
+    this.gameBoyDebug.events.on("turnOnButtonClicked", () =>
+      gameBoy.powerButtonSwitch(),
+    );
+    this.gameBoyDebug.events.on("ejectCartridgeButtonClicked", () =>
+      this.onEjectCartridgeButtonClicked(),
+    );
+    this.gameBoyDebug.events.on(
+      "insertCartridgeButtonClicked",
+      (cartridgeType: CARTRIDGE_TYPE) =>
+        this.onInsertCartridgeButtonClicked(cartridgeType),
+    );
+    this.gameBoyDebug.events.on("audioEnabledChanged", () =>
+      this.onDebugSoundsEnabledChanged(),
+    );
+    this.gameBoyDebug.events.on("masterVolumeChanged", () =>
+      this.onMasterVolumeChanged(),
+    );
+    this.gameBoyDebug.events.on("gameBoyVolumeChanged", () =>
+      this.onDebugGameBoyVolumeChanged(),
+    );
+    this.gameBoyDebug.events.on("restartTetrisButtonClicked", (level: number) =>
+      this.restartTetrisButtonClicked(level),
+    );
+    this.gameBoyDebug.events.on("tetrisDisableFalling", () =>
+      this.onTetrisDisableFalling(),
+    );
+    this.gameBoyDebug.events.on("tetrisClearBottomLine", () =>
+      this.onTetrisClearBottomLine(),
+    );
   }
 
   private onPowerOn(): void {
@@ -341,7 +458,9 @@ export default class GameBoyController {
     this.activeObjects[SCENE_OBJECT_TYPE.GameBoy].addCartridge(cartridge);
     this.activeObjects[SCENE_OBJECT_TYPE.GameBoy].enableRotation();
     this.activeObjects[SCENE_OBJECT_TYPE.GameBoy].powerOn();
-    this.activeObjects[SCENE_OBJECT_TYPE.GameBoy].setCartridgePocketStandardTexture();
+    this.activeObjects[
+      SCENE_OBJECT_TYPE.GameBoy
+    ].setCartridgePocketStandardTexture();
 
     if (gameType === GAME_TYPE.Portfolio) {
       this.cameraController.zoomToScreen();
@@ -381,7 +500,9 @@ export default class GameBoyController {
   }
 
   private onInsertCartridgeButtonClicked(cartridgeType: CARTRIDGE_TYPE): void {
-    this.activeObjects[SCENE_OBJECT_TYPE.Cartridges].insertCartridge(cartridgeType);
+    this.activeObjects[SCENE_OBJECT_TYPE.Cartridges].insertCartridge(
+      cartridgeType,
+    );
   }
 
   private onSoundsEnabledChanged(): void {
@@ -394,11 +515,13 @@ export default class GameBoyController {
 
   private onDebugSoundsEnabledChanged(): void {
     this.onSoundsEnabledChanged();
-    this.events.emit('onSoundsEnabledChanged');
+    this.events.emit("onSoundsEnabledChanged");
   }
 
   private onMasterVolumeChanged(): void {
-    this.activeObjects[SCENE_OBJECT_TYPE.GameBoy].onVolumeChanged(SOUNDS_CONFIG.masterVolume);
+    this.activeObjects[SCENE_OBJECT_TYPE.GameBoy].onVolumeChanged(
+      SOUNDS_CONFIG.masterVolume,
+    );
   }
 
   private onDebugGameBoyVolumeChanged(): void {
@@ -411,7 +534,9 @@ export default class GameBoyController {
   }
 
   private onSpaceInvadersBestScoreChange(): void {
-    this.gameBoyDebug.updateSpaceInvadersBestScore(SPACE_INVADERS_CONFIG.bestScore);
+    this.gameBoyDebug.updateSpaceInvadersBestScore(
+      SPACE_INVADERS_CONFIG.bestScore,
+    );
   }
 
   private onGameStarted(gameType: GAME_TYPE): void {

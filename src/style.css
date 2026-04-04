@@ -5,6 +5,13 @@
   font-style: normal;
 }
 
+@font-face {
+  font-family: 'Redaction';
+  src: url('/fonts/redaction-35-latin-400-italic.ttf');
+  font-weight: 400;
+  font-style: italic;
+}
+
 *
 {
   margin: 0;
@@ -243,4 +250,60 @@ body
 .copyrights.show
 {
   display: block;
+}
+
+.profile-intro
+{
+  position: absolute;
+  color: #000000;
+  opacity: 0.6;
+  pointer-events: none;
+  display: none;
+  text-align: left;
+}
+
+.profile-intro.show
+{
+  display: block;
+}
+
+.profile-intro.hide
+{
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.profile-name
+{
+  font-family: sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: capitalize;
+}
+
+.profile-title
+{
+  font-family: 'Redaction', serif;
+  font-style: italic;
+  font-size: 22px;
+  margin-top: 2px;
+}
+
+.profile-cta
+{
+  font-family: sans-serif;
+  font-size: 13px;
+  margin-top: 14px;
+  letter-spacing: 0.5px;
+}
+
+@keyframes blink-cta {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.profile-cta--blink
+{
+  animation: blink-cta 1.4s ease-in-out infinite;
 }

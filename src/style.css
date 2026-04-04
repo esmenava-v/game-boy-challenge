@@ -277,7 +277,7 @@ body
 {
   font-family: sans-serif;
   font-size: 28px;
-  font-weight: 700;
+  font-weight: 550;
   letter-spacing: 1px;
   text-transform: capitalize;
 }
@@ -287,14 +287,14 @@ body
   font-family: 'Redaction', serif;
   font-style: italic;
   font-size: 22px;
-  margin-top: 2px;
+  margin-top: 4px;
 }
 
 .profile-cta
 {
   font-family: sans-serif;
   font-size: 13px;
-  margin-top: 14px;
+  margin-top: 12px;
   letter-spacing: 0.5px;
 }
 
@@ -306,4 +306,42 @@ body
 .profile-cta--blink
 {
   animation: blink-cta 1.4s ease-in-out infinite;
+}
+
+.profile-socials
+{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.profile-social-link
+{
+  opacity: 0.4;
+  transition: opacity 0.2s ease, transform 0.1s ease;
+  pointer-events: auto;
+}
+
+.profile-social-link:hover
+{
+  opacity: 1;
+}
+
+.profile-social-link:active
+{
+  transform: scale(0.9);
+}
+
+.profile-social-icon
+{
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+.profile-social-icon[alt="X"]
+{
+  width: 14px;
+  height: 14px;
 }

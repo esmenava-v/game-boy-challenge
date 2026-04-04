@@ -230,9 +230,17 @@ export default class GameBoyController {
           ".profile-intro",
         ) as HTMLElement;
         profileIntro.innerHTML = `
-          <div class="profile-name">esme nava</div>
+          <div class="profile-name">esmé nava</div>
           <div class="profile-title">Design Engineer</div>
           <div class="profile-cta profile-cta--blink">Tap Game to Start</div>
+          <div class="profile-socials">
+            <a href="https://x.com/esmenavav" target="_blank" rel="noopener noreferrer" class="profile-social-link">
+              <img src="assets/other/x-logo-black.png" alt="X" class="profile-social-icon" />
+            </a>
+            <a href="https://www.linkedin.com/in/esmeralda-nava/" target="_blank" rel="noopener noreferrer" class="profile-social-link">
+              <img src="assets/other/linkedin-logo.png" alt="LinkedIn" class="profile-social-icon" />
+            </a>
+          </div>
         `;
         profileIntro.classList.add("show");
         profileIntro.style.left = "50%";
@@ -280,9 +288,17 @@ export default class GameBoyController {
           ".profile-intro",
         ) as HTMLElement;
         profileIntro.innerHTML = `
-          <div class="profile-name">esme nava</div>
+          <div class="profile-name">esmé nava</div>
           <div class="profile-title">Design Engineer</div>
-          <div class="profile-cta profile-cta--blink">Click Game to Start</div>
+          <div class="profile-cta profile-cta--blink">Click game</div>
+          <div class="profile-socials">
+            <a href="https://x.com/esmenavav" target="_blank" rel="noopener noreferrer" class="profile-social-link">
+              <img src="assets/other/x-logo-black.png" alt="X" class="profile-social-icon" />
+            </a>
+            <a href="https://www.linkedin.com/in/esmeralda-nava/" target="_blank" rel="noopener noreferrer" class="profile-social-link">
+              <img src="assets/other/linkedin-logo.png" alt="LinkedIn" class="profile-social-icon" />
+            </a>
+          </div>
         `;
         profileIntro.classList.add("show");
 

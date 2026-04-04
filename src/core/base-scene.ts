@@ -298,7 +298,7 @@ export default class BaseScene {
   private showCopyrights(): void {
     const copyrights: HTMLElement = document.querySelector('.copyrights');
     copyrights.innerHTML = `
-    Nintendo and Game Boy are trademarks of Nintendo.`;
+    Nintendo and Game Boy are trademarks of Nintendo. Game Boy animated by <a href="https://github.com/Snokke/game-boy-challenge" target="_blank" style="color: inherit;">ANDRII BABINTSEV</a>.`;
 
     if (SCENE_CONFIG.isMobile) {
       copyrights.style['font-size']  = '5px';

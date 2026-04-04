@@ -244,9 +244,7 @@ export default class GameBoyController {
         const onCartridgeTap = (e: PointerEvent) => {
           if (!this.isIntroActive) return;
 
-          const x = (e.clientX / window.innerWidth) * 2 - 1;
-          const y = -(e.clientY / window.innerHeight) * 2 + 1;
-          const intersect = this.raycasterController.checkIntersection(x, y);
+          const intersect = this.raycasterController.checkIntersection(e.clientX, e.clientY);
 
           if (
             intersect &&

@@ -73,7 +73,11 @@ export default class BaseScene {
     this.setupBackgroundColor();
 
     this.showCopyrights();
-    this.showTextToLandscape();
+
+    if (!SCENE_CONFIG.isMobile) {
+      this.showTextToLandscape();
+    }
+
     this.keyboardControls();
   }
 

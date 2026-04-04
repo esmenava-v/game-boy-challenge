@@ -11,6 +11,7 @@ import { GAME_TYPE } from './game-boy-games/data/games-config';
 import { SPACE_INVADERS_CONFIG } from './game-boy-games/games/space-invaders/data/space-invaders-config';
 import { SOUNDS_CONFIG } from '../../Data/Configs/Main/sounds-config';
 import DEBUG_CONFIG from '../../Data/Configs/Main/debug-config';
+import TWEEN from 'three/addons/libs/tween.module.js';
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
 import RaycasterController from '../raycaster-controller';
 import GameBoyDebug from './game-boy-debug';
@@ -206,18 +207,40 @@ export default class GameBoyController {
       introText.innerHTML = 'Click to start';
 
       if (SCENE_CONFIG.isMobile) {
-        introText.classList.add('fastHide');
+        // Blink the intro text on mobile
+        const blinkInterval = setInterval(() => {
+          introText.style.opacity = introText.style.opacity === '0' ? '0.5' : '0';
+        }, 700);
+
+        window.addEventListener('pointerdown', () => {
+          if (this.isIntroActive) {
+            this.isIntroActive = false;
+            clearInterval(blinkInterval);
+            introText.classList.add('hide');
+            this.activeObjects[SCENE_OBJECT_TYPE.GameBoy].disableIntro();
+
+            // Animate Game Boy sliding up into view
+            const gameBoy = this.activeObjects[SCENE_OBJECT_TYPE.GameBoy];
+            new TWEEN.Tween(gameBoy.position)
+              .to({ y: 0 }, 800)
+              .easing(TWEEN.Easing.Quadratic.Out)
+              .start();
+
+            // Simultaneously insert the cartridge
+            this.activeObjects[SCENE_OBJECT_TYPE.Cartridges].insertCartridge(CARTRIDGE_TYPE.Portfolio);
+          }
+        }, { once: true });
+      } else {
+        // Desktop: existing behavior
+        window.addEventListener('pointerdown', () => {
+          if (this.isIntroActive) {
+            this.isIntroActive = false;
+            this.activeObjects[SCENE_OBJECT_TYPE.GameBoy].disableIntro();
+            introText.classList.add('hide');
+          }
+        });
       }
     }
-
-    window.addEventListener('pointerdown', () => {
-      if (this.isIntroActive) {
-        this.isIntroActive = false;
-        this.activeObjects[SCENE_OBJECT_TYPE.GameBoy].disableIntro();
-
-        introText.classList.add('hide');
-      }
-    });
   }
 
   private initActiveObjectsSignals(): void {

@@ -4,6 +4,7 @@ import Cartridge from './cartridge';
 import { CARTRIDGES_CONFIG, CARTRIDGE_TYPE } from './data/cartridges-config';
 import { EventEmitter } from 'pixi.js';
 import { GAME_BOY_CONFIG } from '../game-boy/data/game-boy-config';
+import SCENE_CONFIG from '../../../Data/Configs/Main/scene-config';
 import { Timeout } from '../../../core/helpers/timeout';
 
 export default class CartridgesController extends THREE.Group {
@@ -305,6 +306,11 @@ export default class CartridgesController extends THREE.Group {
       this.add(cartridge);
 
       cartridge.position.copy(config.startPosition);
+
+      if (SCENE_CONFIG.isMobile && type === CARTRIDGE_TYPE.Portfolio) {
+        cartridge.position.x = 0;
+      }
+
       cartridge.startPosition = cartridge.position.clone();
 
       cartridge.rotation.y = config.rotation.y * THREE.MathUtils.DEG2RAD;

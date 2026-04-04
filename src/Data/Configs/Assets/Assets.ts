@@ -13,8 +13,8 @@ const TextureAssets: string[] = [
 
   'baked-cartridge-day-esme.jpg',
   'baked-cartridge-day-esme-in-pocket.jpg',
-  'baked-cartridge-night-esme.jpg',
-  'baked-cartridge-night-esme-in-pocket.jpg',
+  'baked-cartridge-rose-esme.jpg',
+  'baked-cartridge-rose-esme-in-pocket.jpg',
 
   'background.jpg',
 ];

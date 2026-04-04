@@ -71,8 +71,8 @@ const CARTRIDGES_BY_TYPE_CONFIG = {
         textureInPocket: 'baked-cartridge-day-esme-in-pocket',
       },
       night: {
-        texture: 'baked-cartridge-night-esme',
-        textureInPocket: 'baked-cartridge-night-esme-in-pocket',
+        texture: 'baked-cartridge-rose-esme',
+        textureInPocket: 'baked-cartridge-rose-esme-in-pocket',
       },
     },
     game: GAME_TYPE.Portfolio,

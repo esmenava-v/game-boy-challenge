@@ -212,7 +212,6 @@ export default class CartridgesController extends THREE.Group {
     this.events.emit('cartridgeStartEjecting');
 
     const positions = CARTRIDGES_CONFIG.positions.eject;
-    const floatingConfig = CARTRIDGES_CONFIG.floating[cartridgeType];
 
     cartridge.setStandardTexture();
 
@@ -222,20 +221,20 @@ export default class CartridgesController extends THREE.Group {
       .delay(400)
       .start()
       .onComplete(() => {
-        const distance = cartridge.position.distanceTo(floatingConfig.startPosition);
+        const distance = cartridge.position.distanceTo(cartridge.startPosition);
         const time = distance / (speed * 0.001);
 
         new TWEEN.Tween(cartridge.position)
           .to({
-            x: [positions.middle.x, floatingConfig.startPosition.x],
-            y: [positions.middle.y, floatingConfig.startPosition.y],
-            z: [positions.middle.z, floatingConfig.startPosition.z],
+            x: [positions.middle.x, cartridge.startPosition.x],
+            y: [positions.middle.y, cartridge.startPosition.y],
+            z: [positions.middle.z, cartridge.startPosition.z],
             }, time)
           .interpolation(TWEEN.Interpolation.Bezier)
           .easing(TWEEN.Easing.Sinusoidal.Out)
           .start()
           .onComplete(() => {
-            cartridge.position.copy(floatingConfig.startPosition);
+            cartridge.position.copy(cartridge.startPosition);
             this._onCartridgeEjected(cartridgeType);
           });
 
@@ -309,6 +308,7 @@ export default class CartridgesController extends THREE.Group {
 
       if (SCENE_CONFIG.isMobile && type === CARTRIDGE_TYPE.Portfolio) {
         cartridge.position.x = 0;
+        cartridge.position.y = -1.0;
       }
 
       cartridge.startPosition = cartridge.position.clone();

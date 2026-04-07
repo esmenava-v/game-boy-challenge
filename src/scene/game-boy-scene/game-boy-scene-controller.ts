@@ -41,6 +41,8 @@ export default class GameBoyController {
   private draggingObject: any;
   private isIntroActive: boolean;
   private isAnimatingIntro: boolean;
+  private profileIntro: HTMLElement;
+  private onCartridgeTap: (e: PointerEvent) => void;
 
   constructor(data: any) {
     this.events = new EventEmitter();
@@ -232,10 +234,10 @@ export default class GameBoyController {
         // Mobile: show profile intro with name, title, and CTA
         introText.classList.add("fastHide");
 
-        const profileIntro = document.querySelector(
+        this.profileIntro = document.querySelector(
           ".profile-intro",
         ) as HTMLElement;
-        profileIntro.innerHTML = `
+        this.profileIntro.innerHTML = `
           <div class="profile-name">esmé nava</div>
           <div class="profile-title">Design Engineer</div>
           <div class="profile-cta profile-cta--blink">Tap Game to Start</div>
@@ -248,14 +250,14 @@ export default class GameBoyController {
             </a>
           </div>
         `;
-        profileIntro.classList.add("show");
-        profileIntro.style.left = "50%";
-        profileIntro.style.transform = "translateX(-50%)";
-        profileIntro.style.textAlign = "center";
-        profileIntro.style.top = "15%";
+        this.profileIntro.classList.add("show");
+        this.profileIntro.style.left = "50%";
+        this.profileIntro.style.transform = "translateX(-50%)";
+        this.profileIntro.style.textAlign = "center";
+        this.profileIntro.style.top = "15%";
 
         // Start only when cartridge is tapped
-        const onCartridgeTap = (e: PointerEvent) => {
+        this.onCartridgeTap = (e: PointerEvent) => {
           if (!this.isIntroActive) return;
 
           const intersect = this.raycasterController.checkIntersection(e.clientX, e.clientY);
@@ -266,7 +268,7 @@ export default class GameBoyController {
             intersect.object.userData.sceneObjectType === SCENE_OBJECT_TYPE.Cartridges
           ) {
             this.isIntroActive = false;
-            profileIntro.classList.add("hide");
+            this.profileIntro.classList.add("hide");
             this.activeObjects[SCENE_OBJECT_TYPE.GameBoy].disableIntro();
 
             // Animate Game Boy sliding up into view
@@ -285,11 +287,11 @@ export default class GameBoyController {
               CARTRIDGE_TYPE.Portfolio,
             );
 
-            window.removeEventListener("pointerdown", onCartridgeTap);
+            window.removeEventListener("pointerdown", this.onCartridgeTap);
           }
         };
 
-        window.addEventListener("pointerdown", onCartridgeTap);
+        window.addEventListener("pointerdown", this.onCartridgeTap);
       } else {
         // Desktop: show profile intro instead of plain "Click to start"
         introText.classList.add("fastHide");
@@ -537,6 +539,34 @@ export default class GameBoyController {
 
     TETRIS_CONFIG.cartridgeState = CARTRIDGE_STATE.NotInserted;
     this.gameBoyDebug.updateTetrisCartridgeState();
+
+    if (SCENE_CONFIG.isMobile) {
+      this.returnToLandingPage();
+    }
+  }
+
+  private returnToLandingPage(): void {
+    this.isAnimatingIntro = true;
+
+    // Zoom camera back out
+    this.cameraController.zoomToDefault();
+
+    // Slide Game Boy back down off-screen
+    const gameBoy = this.activeObjects[SCENE_OBJECT_TYPE.GameBoy];
+    new TWEEN.Tween(gameBoy.position)
+      .to({ y: -10 }, 800)
+      .easing(TWEEN.Easing.Quadratic.In)
+      .start()
+      .onComplete(() => {
+        this.isAnimatingIntro = false;
+        this.isIntroActive = true;
+
+        // Re-show profile intro
+        this.profileIntro.classList.remove("hide");
+
+        // Re-register cartridge tap listener
+        window.addEventListener("pointerdown", this.onCartridgeTap);
+      });
   }
 
   private onCartridgeTypeChanged(): void {

@@ -97,6 +97,27 @@ export default class CameraController {
     }
   }
 
+  public zoomToDefault(): void {
+    if (this.zoomTween) {
+      this.zoomTween.stop();
+    }
+
+    const targetDistance = CAMERA_CONTROLLER_CONFIG.maxDistance;
+    const maxDistance = CAMERA_CONTROLLER_CONFIG.maxDistance;
+
+    this.zoomTween = new TWEEN.Tween(this)
+      .to({ zoomDistance: targetDistance }, 1500)
+      .easing(TWEEN.Easing.Quadratic.Out)
+      .onUpdate(() => {
+        this.zoomObject.position.z = this.zoomDistance;
+        this.zoomObject.position.y = (-this.zoomObject.position.z + maxDistance - 0.4) * 0.13;
+
+        GAME_BOY_CONFIG.rotation.cursorRotationSpeed = 0.2;
+        GAME_BOY_CONFIG.rotation.rotationDragEnabled = true;
+      })
+      .start();
+  }
+
   public zoomToScreen(): void {
     if (this.zoomTween) {
       this.zoomTween.stop();

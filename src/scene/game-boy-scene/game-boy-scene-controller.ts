@@ -241,7 +241,7 @@ export default class GameBoyController {
           <div class="profile-name">esmé nava</div>
           <div class="profile-title">Design Engineer</div>
           <div class="profile-cta profile-cta--blink">Tap Game to Start</div>
-          <div class="profile-socials">
+          <div class="profile-socials" style="justify-content: center;">
             <a href="https://x.com/esmenavav" target="_blank" rel="noopener noreferrer" class="profile-social-link">
               <img src="assets/other/x-logo-black.png" alt="X" class="profile-social-icon" />
             </a>

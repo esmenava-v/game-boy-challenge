@@ -95,7 +95,7 @@ export default class GameBoyScene extends THREE.Group {
     this.add(gameBoy);
 
     if (SCENE_CONFIG.isMobile) {
-      gameBoy.position.y = -8;
+      gameBoy.position.y = -10;
     }
 
     this.activeObjects[SCENE_OBJECT_TYPE.GameBoy] = gameBoy;

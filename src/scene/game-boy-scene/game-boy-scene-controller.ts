@@ -40,6 +40,7 @@ export default class GameBoyController {
   private dragPointerDownPosition: THREE.Vector2;
   private draggingObject: any;
   private isIntroActive: boolean;
+  private isAnimatingIntro: boolean;
 
   constructor(data: any) {
     this.events = new EventEmitter();
@@ -61,6 +62,7 @@ export default class GameBoyController {
 
     this.isIntroActive =
       GAME_BOY_CONFIG.intro.enabled && !DEBUG_CONFIG.startState.disableIntro;
+    this.isAnimatingIntro = false;
 
     this.init();
   }
@@ -70,7 +72,7 @@ export default class GameBoyController {
     this.activeObjects[SCENE_OBJECT_TYPE.Cartridges].update(dt);
     this.cameraController.update(dt);
 
-    if (this.isIntroActive) {
+    if (this.isIntroActive || this.isAnimatingIntro) {
       return;
     }
 
@@ -107,6 +109,10 @@ export default class GameBoyController {
   }
 
   public onPointerDown(x: number, y: number): void {
+    if (this.isAnimatingIntro) {
+      return;
+    }
+
     this.pointerPositionOnDown.set(x, y);
 
     const intersect = this.raycasterController.checkIntersection(x, y);
@@ -264,11 +270,15 @@ export default class GameBoyController {
             this.activeObjects[SCENE_OBJECT_TYPE.GameBoy].disableIntro();
 
             // Animate Game Boy sliding up into view
+            this.isAnimatingIntro = true;
             const gameBoy = this.activeObjects[SCENE_OBJECT_TYPE.GameBoy];
             new TWEEN.Tween(gameBoy.position)
               .to({ y: 0 }, 800)
               .easing(TWEEN.Easing.Quadratic.Out)
-              .start();
+              .start()
+              .onComplete(() => {
+                this.isAnimatingIntro = false;
+              });
 
             // Simultaneously insert the cartridge
             this.activeObjects[SCENE_OBJECT_TYPE.Cartridges].insertCartridge(

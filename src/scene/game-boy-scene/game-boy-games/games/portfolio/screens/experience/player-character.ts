@@ -119,13 +119,12 @@ export default class PlayerCharacter extends Container {
     g.rect(3, -1, 4, 1).fill(0x1A1A1A);
     // Bangs at front
     g.rect(7, 2, 1, 1).fill(0x1A1A1A);
-    // Ponytail — extends from back of head, down
+    // Hair down
     g.rect(1, 1, 2, 2).fill(0x1A1A1A);
-    g.rect(0, 3, 2, 1).fill(0x1A1A1A);
-    g.rect(-1, 4, 2, 2).fill(0x1A1A1A);
-    g.rect(-1, 6, 2, 1).fill(0x2D2D2D);
-    // Hair tie
-    g.rect(1, 2, 1, 1).fill(0xFF4466);
+    g.rect(1, 3, 1, 1).fill(0x1A1A1A);
+    g.rect(0, 4, 2, 2).fill(0x1A1A1A);
+    g.rect(0, 6, 2, 2).fill(0x1A1A1A);
+    g.rect(0, 8, 2, 1).fill(0x2D2D2D);
     // Head — light brown skin
     g.rect(2, 2, 6, 3).fill(0xC68642);
     // Jumpsuit body
@@ -150,13 +149,12 @@ export default class PlayerCharacter extends Container {
     g.rect(3, -1, 4, 1).fill(0x1A1A1A);
     // Bangs at front
     g.rect(7, 2, 1, 1).fill(0x1A1A1A);
-    // Ponytail — bounces slightly back while walking
+    // Hair down — sways back
     g.rect(1, 1, 2, 2).fill(0x1A1A1A);
-    g.rect(-1, 3, 2, 1).fill(0x1A1A1A);
-    g.rect(-2, 4, 2, 2).fill(0x1A1A1A);
-    g.rect(-2, 6, 2, 1).fill(0x2D2D2D);
-    // Hair tie
-    g.rect(1, 2, 1, 1).fill(0xFF4466);
+    g.rect(0, 3, 2, 1).fill(0x1A1A1A);
+    g.rect(-1, 4, 2, 2).fill(0x1A1A1A);
+    g.rect(-1, 6, 2, 2).fill(0x1A1A1A);
+    g.rect(-1, 8, 2, 1).fill(0x2D2D2D);
     // Head — light brown skin
     g.rect(2, 2, 6, 3).fill(0xC68642);
     // Jumpsuit body
@@ -181,13 +179,12 @@ export default class PlayerCharacter extends Container {
     g.rect(3, -1, 4, 1).fill(0x1A1A1A);
     // Bangs at front
     g.rect(7, 2, 1, 1).fill(0x1A1A1A);
-    // Ponytail — swings forward on this frame
+    // Hair down — pressed forward
     g.rect(1, 1, 2, 2).fill(0x1A1A1A);
-    g.rect(0, 3, 2, 1).fill(0x1A1A1A);
-    g.rect(0, 4, 2, 2).fill(0x1A1A1A);
-    g.rect(0, 6, 2, 1).fill(0x2D2D2D);
-    // Hair tie
-    g.rect(1, 2, 1, 1).fill(0xFF4466);
+    g.rect(1, 3, 1, 1).fill(0x1A1A1A);
+    g.rect(1, 4, 1, 2).fill(0x1A1A1A);
+    g.rect(1, 6, 1, 2).fill(0x1A1A1A);
+    g.rect(1, 8, 1, 1).fill(0x2D2D2D);
     // Head — light brown skin
     g.rect(2, 2, 6, 3).fill(0xC68642);
     // Jumpsuit body
@@ -212,13 +209,12 @@ export default class PlayerCharacter extends Container {
     g.rect(3, -1, 4, 1).fill(0x1A1A1A);
     // Bangs at front
     g.rect(7, 2, 1, 1).fill(0x1A1A1A);
-    // Ponytail — flips up during jump
+    // Hair down — floats up
     g.rect(1, 1, 2, 2).fill(0x1A1A1A);
-    g.rect(-1, 1, 2, 1).fill(0x1A1A1A);
-    g.rect(-2, 2, 2, 2).fill(0x1A1A1A);
-    g.rect(-3, 2, 1, 1).fill(0x2D2D2D);
-    // Hair tie
-    g.rect(1, 2, 1, 1).fill(0xFF4466);
+    g.rect(0, 3, 2, 1).fill(0x1A1A1A);
+    g.rect(-1, 3, 2, 2).fill(0x1A1A1A);
+    g.rect(-1, 5, 2, 1).fill(0x1A1A1A);
+    g.rect(-2, 4, 1, 1).fill(0x2D2D2D);
     // Head — light brown skin
     g.rect(2, 2, 6, 3).fill(0xC68642);
     // Jumpsuit body

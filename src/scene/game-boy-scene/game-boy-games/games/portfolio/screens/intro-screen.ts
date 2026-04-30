@@ -11,9 +11,7 @@ enum INTRO_PHASE {
 }
 
 const DIALOGUE_PAGES: string[] = [
-  "Oh, you're actually\nhere. Good.",
   "I'm Esme.\nDesign engineer,\nStanford alumni,\nfirst-gen.",
-  "I live in the gap\nbetween a Figma file\nand a pull request.",
   "I build things\nfunctional enough to\nship and strange\nenough to remember.",
   "This is my portfolio.\nWalk around and\nexplore where I've\nworked up to now...",
 ];
@@ -353,7 +351,7 @@ export default class IntroScreen extends GameScreenAbstract {
 
     // Page indicator (top-right inside box)
     this.pageIndicator = new Text({
-      text: '1/5',
+      text: '1/3',
       style: {
         fontFamily: 'dogicapixel',
         fontSize: 8,
@@ -436,13 +434,12 @@ export default class IntroScreen extends GameScreenAbstract {
     g.rect(offsetX + 3*s, offsetY - 1*s, 4*s, 1*s).fill(0x1A1A1A);
     // Bangs at front
     g.rect(offsetX + 7*s, offsetY + 2*s, 1*s, 1*s).fill(0x1A1A1A);
-    // Ponytail
+    // Hair down
     g.rect(offsetX + 1*s, offsetY + 1*s, 2*s, 2*s).fill(0x1A1A1A);
-    g.rect(offsetX + 0, offsetY + 3*s, 2*s, 1*s).fill(0x1A1A1A);
-    g.rect(offsetX - 1*s, offsetY + 4*s, 2*s, 2*s).fill(0x1A1A1A);
-    g.rect(offsetX - 1*s, offsetY + 6*s, 2*s, 1*s).fill(0x2D2D2D);
-    // Hair tie
-    g.rect(offsetX + 1*s, offsetY + 2*s, 1*s, 1*s).fill(0xFF4466);
+    g.rect(offsetX + 1*s, offsetY + 3*s, 1*s, 1*s).fill(0x1A1A1A);
+    g.rect(offsetX, offsetY + 4*s, 2*s, 2*s).fill(0x1A1A1A);
+    g.rect(offsetX, offsetY + 6*s, 2*s, 2*s).fill(0x1A1A1A);
+    g.rect(offsetX, offsetY + 8*s, 2*s, 1*s).fill(0x2D2D2D);
     // Head
     g.rect(offsetX + 2*s, offsetY + 2*s, 6*s, 3*s).fill(0xC68642);
     // Jumpsuit body

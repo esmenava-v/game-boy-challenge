@@ -25,7 +25,6 @@ export default class WorldBuilder {
   private cameraFlashTimer: number = 0;
   private cameraFlash: Graphics | null = null;
   private labTable: Graphics | null = null;
-  private genomeSequencer: Graphics | null = null;
 
   constructor(groundLayer: Container, decorationLayer: Container, backgroundLayer: Container) {
     this.groundLayer = groundLayer;
@@ -80,7 +79,7 @@ export default class WorldBuilder {
     }
 
     // Camera recording dot blink — faster when player is in filming area
-    const inFilmingArea = playerWorldX >= 488 && playerWorldX <= 525;
+    const inFilmingArea = playerWorldX >= 458 && playerWorldX <= 495;
     if (this.cameraLight) {
       const blinkSpeed = inFilmingArea ? 1.6 : 0.8;
       this.cameraLight.alpha = 0.5 + 0.5 * Math.sin(this.pulseTimer * blinkSpeed);
@@ -124,11 +123,11 @@ export default class WorldBuilder {
         g.rect(5, 6, 2, 1).fill(0x33AA33);
         g.rect(3, 4, 1, 1).fill(0x33AA33);
 
-        // Map player worldX (488–525) → screen X (3–16)
-        const px = 3 + Math.round(((playerWorldX - 488) / 37) * 13);
+        // Map player worldX (458–495) → screen X (3–16)
+        const px = 3 + Math.round(((playerWorldX - 458) / 37) * 13);
         // Mini player (~6px tall)
         g.rect(px, 6, 2, 1).fill(0x1A1A1A);       // Hair
-        g.rect(px + 2, 6, 1, 1).fill(0xFF4466);    // Pink ponytail
+        g.rect(px - 1, 7, 1, 2).fill(0x1A1A1A);    // Hair flowing down
         g.rect(px, 7, 2, 1).fill(0xC68642);        // Head
         g.rect(px, 8, 2, 3).fill(0x1C1C1C);        // Body/legs
 
@@ -199,38 +198,6 @@ export default class WorldBuilder {
       lg.rect(33, h - 14 + bob3, 2, 4 - bob3).fill({ color: 0x66CCFF, alpha: 0.6 });
     }
 
-    // Genome sequencer — scrolling colored base-pair bars
-    if (this.genomeSequencer) {
-      const sg = this.genomeSequencer;
-      const w = 18;
-      const h = 26;
-      const standH = 5;
-      const bezelY = 2;
-      const bezelH = h - standH - 2;
-      const screenX = 2;
-      const screenY = bezelY + 2;
-      const screenW = w - 4;
-      const screenH = bezelH - 4;
-      // Clear screen area
-      sg.rect(screenX, screenY, screenW, screenH).fill(0x112211);
-      // Base pair colors: A=green, T=red, G=yellow, C=blue
-      const baseColors = [0x44CC44, 0xCC4444, 0xCCCC44, 0x4488CC];
-      const barH = 2;
-      const scrollOffset = Math.floor(this.pulseTimer * 0.6) % barH;
-      const numBars = Math.ceil(screenH / barH) + 1;
-      for (let i = 0; i < numBars; i++) {
-        const barY = screenY + i * barH - scrollOffset;
-        if (barY + barH <= screenY || barY >= screenY + screenH) continue;
-        // Deterministic color per bar based on index + scroll
-        const colorIdx = (i + Math.floor(this.pulseTimer * 0.6 / barH)) % baseColors.length;
-        const barWidth = 3 + ((i * 7 + colorIdx * 3) % (screenW - 3));
-        const clippedY = Math.max(barY, screenY);
-        const clippedH = Math.min(barY + barH, screenY + screenH) - clippedY;
-        if (clippedH > 0) {
-          sg.rect(screenX, clippedY, barWidth, clippedH).fill(baseColors[colorIdx]);
-        }
-      }
-    }
   }
 
   public cullTiles(visibleLeft: number, visibleRight: number): void {
@@ -289,22 +256,22 @@ export default class WorldBuilder {
     g.rect(504, groundY - 34, 10, 34).fill(soft);
     g.rect(520, groundY - 16, 14, 16).fill(soft);
 
-    // === Golden Gate Bridge (bgX ~610–700) ===
+    // === Golden Gate Bridge (bgX ~530–620) ===
     const red = 0xCC5533;
     const darkRed = 0xAA3311;
 
     // Left tower — Art Deco stepped profile
-    g.rect(620, groundY - 60, 6, 60).fill(red);
-    g.rect(618, groundY - 60, 10, 3).fill(red);
-    g.rect(619, groundY - 42, 8, 3).fill(darkRed);
+    g.rect(540, groundY - 60, 6, 60).fill(red);
+    g.rect(538, groundY - 60, 10, 3).fill(red);
+    g.rect(539, groundY - 42, 8, 3).fill(darkRed);
     // Right tower
-    g.rect(686, groundY - 60, 6, 60).fill(red);
-    g.rect(684, groundY - 60, 10, 3).fill(red);
-    g.rect(685, groundY - 42, 8, 3).fill(darkRed);
+    g.rect(606, groundY - 60, 6, 60).fill(red);
+    g.rect(604, groundY - 60, 10, 3).fill(red);
+    g.rect(605, groundY - 42, 8, 3).fill(darkRed);
 
     // Main cable — two parallel catenary lines for thickness
-    const cL = 623;
-    const cR = 689;
+    const cL = 543;
+    const cR = 609;
     const cTopY = groundY - 58;
     const cMidY = groundY - 36;
     for (let i = 0; i <= 14; i++) {
@@ -322,12 +289,12 @@ export default class WorldBuilder {
     }
 
     // Road deck — two-tone for depth
-    g.rect(616, groundY - 22, 80, 2).fill(darkRed);
-    g.rect(616, groundY - 20, 80, 3).fill(red);
+    g.rect(536, groundY - 22, 80, 2).fill(darkRed);
+    g.rect(536, groundY - 20, 80, 3).fill(red);
     // Top railing
-    g.rect(616, groundY - 24, 80, 1).fill(red);
+    g.rect(536, groundY - 24, 80, 1).fill(red);
     // Bottom railing
-    g.rect(616, groundY - 17, 80, 1).fill(darkRed);
+    g.rect(536, groundY - 17, 80, 1).fill(darkRed);
 
     this.backgroundLayer.addChild(g);
   }
@@ -720,26 +687,6 @@ export default class WorldBuilder {
           }
           // Dark pedestal at bottom
           g.rect(1, dec.height - 3, dec.width - 2, 3).fill(0x242C32);
-        } else if (dec.type === 'genome-sequencer') {
-          const w = dec.width;
-          const h = dec.height;
-          // Dark stand/pedestal at the bottom
-          const standH = 5;
-          const standW = 8;
-          const cx = Math.floor(w / 2);
-          g.rect(cx - Math.floor(standW / 2), h - standH, standW, standH).fill(0x242C32);
-          // Monitor bezel (dark gray)
-          const bezelY = 2;
-          const bezelH = h - standH - 2;
-          g.rect(0, bezelY, w, bezelH).fill(0x333344);
-          // Screen area inside bezel (slightly inset)
-          const screenX = 2;
-          const screenY = bezelY + 2;
-          const screenW = w - 4;
-          const screenH = bezelH - 4;
-          g.rect(screenX, screenY, screenW, screenH).fill(0x112211);
-          // Store reference for animation
-          this.genomeSequencer = g;
         } else if (dec.type === 'yc-logo') {
           const w = dec.width;
           const h = dec.height;

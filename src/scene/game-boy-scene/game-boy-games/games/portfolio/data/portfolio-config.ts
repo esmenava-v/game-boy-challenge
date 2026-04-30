@@ -7,10 +7,10 @@ const PORTFOLIO_CONFIG = {
     height: 14,
   },
   world: {
-    width: 1220,
+    width: 1050,
     groundY: 128,
     tileSize: 8,
-    endZoneX: 1120,
+    endZoneX: 950,
   },
   camera: {
     playerOffset: 50,

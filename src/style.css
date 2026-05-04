@@ -171,6 +171,34 @@ body
   display: none;
 }
 
+.controls-legend.collapsed
+{
+  display: none;
+}
+
+.ctrl-toggle
+{
+  position: absolute;
+  bottom: 14px;
+  right: 14px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  background: #2a2a2a;
+  color: #e0e0e0;
+  font-family: 'Inter', 'SF Pro', -apple-system, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  border-bottom: 2px solid #111;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.4);
+  cursor: pointer;
+  opacity: 0.55;
+  z-index: 10;
+}
+
 .ctrl-group
 {
   display: flex;

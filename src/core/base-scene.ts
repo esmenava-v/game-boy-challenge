@@ -382,6 +382,18 @@ export default class BaseScene {
       legend.appendChild(groupEl);
     });
 
+    // Start with controls hidden
+    legend.classList.add('collapsed');
+
+    // Toggle button to show/hide controls
+    const toggleBtn = document.createElement('div');
+    toggleBtn.className = 'ctrl-toggle';
+    toggleBtn.textContent = '?';
+    toggleBtn.addEventListener('click', () => {
+      legend.classList.toggle('collapsed');
+    });
+    document.body.appendChild(toggleBtn);
+
     // Day/night toggle — commented out, forcing night mode for now
     // const sep = document.createElement('div');
     // sep.className = 'ctrl-sep';

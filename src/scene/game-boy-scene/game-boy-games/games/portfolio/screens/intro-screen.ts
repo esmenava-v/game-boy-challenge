@@ -12,7 +12,6 @@ enum INTRO_PHASE {
 
 const DIALOGUE_PAGES: string[] = [
   "I'm Esme.\nDesign engineer,\nStanford alumni,\nfirst-gen.",
-  "I build things\nfunctional enough to\nship and strange\nenough to remember.",
   "This is my portfolio.\nWalk around and\nexplore where I've\nworked up to now...",
 ];
 
@@ -351,7 +350,7 @@ export default class IntroScreen extends GameScreenAbstract {
 
     // Page indicator (top-right inside box)
     this.pageIndicator = new Text({
-      text: '1/3',
+      text: '1/2',
       style: {
         fontFamily: 'dogicapixel',
         fontSize: 8,

@@ -43,6 +43,7 @@ export default class GameBoyController {
   private isAnimatingIntro: boolean;
   private profileIntro: HTMLElement;
   private onCartridgeTap: (e: PointerEvent) => void;
+  private onCartridgeClick: (e: PointerEvent) => void;
 
   constructor(data: any) {
     this.events = new EventEmitter();
@@ -74,7 +75,21 @@ export default class GameBoyController {
     this.activeObjects[SCENE_OBJECT_TYPE.Cartridges].update(dt);
     this.cameraController.update(dt);
 
-    if (this.isIntroActive || this.isAnimatingIntro) {
+    if (this.isAnimatingIntro) {
+      return;
+    }
+
+    if (this.isIntroActive) {
+      const introIntersect = this.raycasterController.checkIntersection(
+        this.pointerPosition.x,
+        this.pointerPosition.y,
+      );
+      if (introIntersect && introIntersect.object &&
+          introIntersect.object.userData.sceneObjectType === SCENE_OBJECT_TYPE.Cartridges) {
+        this.pixiApp.canvas.style.cursor = "pointer";
+      } else {
+        this.pixiApp.canvas.style.cursor = "auto";
+      }
       return;
     }
 
@@ -296,10 +311,10 @@ export default class GameBoyController {
         // Desktop: show profile intro instead of plain "Click to start"
         introText.classList.add("fastHide");
 
-        const profileIntro = document.querySelector(
+        this.profileIntro = document.querySelector(
           ".profile-intro",
         ) as HTMLElement;
-        profileIntro.innerHTML = `
+        this.profileIntro.innerHTML = `
           <div class="profile-name">esmé nava</div>
           <div class="profile-title">Design Engineer</div>
           <div class="profile-cta profile-cta--blink">Click game</div>
@@ -312,7 +327,7 @@ export default class GameBoyController {
             </a>
           </div>
         `;
-        profileIntro.classList.add("show");
+        this.profileIntro.classList.add("show");
 
         // Position text above the cartridge by projecting its 3D position to screen
         const cartridge =
@@ -322,13 +337,13 @@ export default class GameBoyController {
           worldPos.project(this.camera);
           const screenX = (worldPos.x * 0.5 + 0.2) * window.innerWidth;
           const screenY = (-worldPos.y * 0.5 + 0.4) * window.innerHeight;
-          const textHeight = profileIntro.getBoundingClientRect().height;
-          profileIntro.style.bottom = `${
+          const textHeight = this.profileIntro.getBoundingClientRect().height;
+          this.profileIntro.style.bottom = `${
             window.innerHeight - screenY + textHeight + 24
           }px`;
-          profileIntro.style.right = `${window.innerWidth - screenX}px`;
-          profileIntro.style.left = "";
-          profileIntro.style.transform = "none";
+          this.profileIntro.style.right = `${window.innerWidth - screenX}px`;
+          this.profileIntro.style.left = "";
+          this.profileIntro.style.transform = "none";
         };
 
         positionProfileText();
@@ -336,7 +351,7 @@ export default class GameBoyController {
           if (this.isIntroActive) positionProfileText();
         });
 
-        const onCartridgeClick = (e: PointerEvent) => {
+        this.onCartridgeClick = (e: PointerEvent) => {
           if (!this.isIntroActive) return;
 
           const intersect = this.raycasterController.checkIntersection(e.clientX, e.clientY);
@@ -348,12 +363,12 @@ export default class GameBoyController {
           ) {
             this.isIntroActive = false;
             this.activeObjects[SCENE_OBJECT_TYPE.GameBoy].disableIntro();
-            profileIntro.classList.add("hide");
-            window.removeEventListener("pointerdown", onCartridgeClick);
+            this.profileIntro.classList.add("hide");
+            window.removeEventListener("pointerdown", this.onCartridgeClick);
           }
         };
 
-        window.addEventListener("pointerdown", onCartridgeClick);
+        window.addEventListener("pointerdown", this.onCartridgeClick);
       }
     }
   }
@@ -542,6 +557,8 @@ export default class GameBoyController {
 
     if (SCENE_CONFIG.isMobile) {
       this.returnToLandingPage();
+    } else {
+      this.returnToLandingPageDesktop();
     }
   }
 
@@ -567,6 +584,16 @@ export default class GameBoyController {
         // Re-register cartridge tap listener
         window.addEventListener("pointerdown", this.onCartridgeTap);
       });
+  }
+
+  private returnToLandingPageDesktop(): void {
+    this.isIntroActive = true;
+
+    // Re-show profile intro
+    this.profileIntro.classList.remove("hide");
+
+    // Re-register cartridge click listener
+    window.addEventListener("pointerdown", this.onCartridgeClick);
   }
 
   private onCartridgeTypeChanged(): void {

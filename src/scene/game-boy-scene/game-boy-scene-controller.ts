@@ -257,7 +257,7 @@ export default class GameBoyController {
           <div class="profile-title">Design Engineer</div>
           <div class="profile-cta profile-cta--blink">Tap Game to Start</div>
           <div class="profile-socials" style="justify-content: center;">
-            <a href="https://x.com/esmenavav" target="_blank" rel="noopener noreferrer" class="profile-social-link">
+            <a href="https://x.com/_esmenava" target="_blank" rel="noopener noreferrer" class="profile-social-link">
               <img src="assets/other/x-logo-black.png" alt="X" class="profile-social-icon" />
             </a>
             <a href="https://www.linkedin.com/in/esmeralda-nava/" target="_blank" rel="noopener noreferrer" class="profile-social-link">
@@ -319,7 +319,7 @@ export default class GameBoyController {
           <div class="profile-title">Design Engineer</div>
           <div class="profile-cta profile-cta--blink">Click game</div>
           <div class="profile-socials">
-            <a href="https://x.com/esmenavav" target="_blank" rel="noopener noreferrer" class="profile-social-link">
+            <a href="https://x.com/_esmenava" target="_blank" rel="noopener noreferrer" class="profile-social-link">
               <img src="assets/other/x-logo-black.png" alt="X" class="profile-social-icon" />
             </a>
             <a href="https://www.linkedin.com/in/esmeralda-nava/" target="_blank" rel="noopener noreferrer" class="profile-social-link">
